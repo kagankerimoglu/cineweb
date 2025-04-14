@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Depth of Field Calculator</title>
+  <style>
+    body {
+      font-family: Helvetica Neue, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 15px;
+      background: #e9e9e9;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Depth of Field Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateDOF();">
+      <label for="sensorWidth">Sensor Width (mm):</label>
+      <input type="number" id="sensorWidth" placeholder="e.g. 36" step="any">
+      
+      <label for="sensorHeight">Sensor Height (mm):</label>
+      <input type="number" id="sensorHeight" placeholder="e.g. 24" step="any">
+      
+      <label for="focusingDistance">Focusing Distance (meters):</label>
+      <input type="number" id="focusingDistance" placeholder="e.g. 2" step="any">
+      
+      <label for="focalLength">Focal Length (mm):</label>
+      <input type="number" id="focalLength" placeholder="e.g. 50" step="any">
+      
+      <label for="aperture">Aperture:</label>
+      <input type="number" id="aperture" placeholder="e.g. 4" step="any">
+      
+      <button type="submit">Calculate</button>
+    </form>
+    
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="footer">
+    Version 1.0 - Written by Kagan Kerimoglu
+  </div>
+  
+  <script>
+    function calculateDOF() {
+      var sensorWidth = parseFloat(document.getElementById("sensorWidth").value);
+      var sensorHeight = parseFloat(document.getElementById("sensorHeight").value);
+      var focusingDistanceMeters = parseFloat(document.getElementById("focusingDistance").value);
+      var focalLength = parseFloat(document.getElementById("focalLength").value);
+      var aperture = parseFloat(document.getElementById("aperture").value);
+      
+      if (isNaN(sensorWidth) || isNaN(sensorHeight) || isNaN(focusingDistanceMeters) ||
+          isNaN(focalLength) || isNaN(aperture)) {
+        alert("Please fill in all fields with valid numbers.");
+        return;
+      }
+
+      // Convert focusing distance from meters to mm
+      var focusingDistance = focusingDistanceMeters * 1000;
+
+      var sensorDiagonal = Math.sqrt(Math.pow(sensorWidth, 2) + Math.pow(sensorHeight, 2));
+      var CoC = sensorDiagonal / 1500;
+
+      var H = focalLength + (Math.pow(focalLength, 2)) / (aperture * CoC);
+
+      var dofFarMM;
+      if (focusingDistance >= H) {
+        dofFarMM = Infinity;
+      } else {
+        dofFarMM = (H * focusingDistance) / (H - (focusingDistance - focalLength));
+      }
+
+      var dofNearMM = (H * focusingDistance) / (H + (focusingDistance - focalLength));
+      var dofMM = dofFarMM === Infinity ? Infinity : dofFarMM - dofNearMM;
+
+      var resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "<h2>Results</h2>" +
+        "<p><strong>Depth of Field:</strong> " + (dofMM === Infinity ? "Infinity ♾️" : (dofMM / 1000).toFixed(2) + " m (" + dofMM.toFixed(2) + " mm)</p>") +
+        "<p><strong>Depth of Field Near Limit:</strong> " + (dofNearMM / 1000).toFixed(2) + " m (" + dofNearMM.toFixed(2) + " mm)</p>" +
+        "<p><strong>Depth of Field Far Limit:</strong> " + (dofFarMM === Infinity ? "Infinity ♾️" : (dofFarMM / 1000).toFixed(2) + " m (" + dofFarMM.toFixed(2) + " mm)") + "</p>" +
+        "<hr>" +
+        "<p><strong>Hyperfocal Distance:</strong> " + (H / 1000).toFixed(2) + " m (" + H.toFixed(2) + " mm)</p>" +
+        "<p><strong>Circle of Confusion:</strong> " + CoC.toFixed(4) + " mm</p>" +
+        "<p><strong>Sensor Diagonal:</strong> " + sensorDiagonal.toFixed(2) + " mm</p>";
+    }
+  </script>
+</body>
+</html>
