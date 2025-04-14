@@ -1,2 +1,2 @@
 # Cine Calculator
-Repository of various web calculators.
+Repository of various HTML-based calculators related to cineamatography.
