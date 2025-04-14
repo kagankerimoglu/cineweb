@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diopter Calculator</title>
+  <style>
+    body {
+      font-family: Helvetica Neue, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 15px;
+      background: #e9e9e9;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body onload="updateFields()">
+  <div class="container">
+    <h1>Diopter Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateDiopter();">
+      <label for="calcType">Calculation Type:</label>
+      <select id="calcType" onchange="updateFields()">
+        <option value="diopterCloseFocus">Diopter Close Focus</option>
+        <option value="diopterStrength">Diopter Strength</option>
+      </select>
+      
+      <!-- Common Input -->
+      <label for="closeFocus">Close Focus (meters):</label>
+      <input type="number" id="closeFocus" placeholder="e.g. 0.5" step="any">
+      
+      <!-- Conditional Input for Diopter Close Focus Calculation -->
+      <div id="diopterStrengthInput">
+        <label for="inputDiopterStrength">Diopter Strength:</label>
+        <input type="number" id="inputDiopterStrength" placeholder="e.g. 2" step="any">
+      </div>
+      
+      <!-- Conditional Input for Diopter Strength Calculation -->
+      <div id="diopterCloseFocusInput">
+        <label for="inputDiopterCloseFocus">Diopter Close Focus:</label>
+        <input type="number" id="inputDiopterCloseFocus" placeholder="e.g. 0.2" step="any">
+      </div>
+      
+      <button type="submit">Calculate</button>
+    </form>
+    
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="footer">
+    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+  </div>
+  
+  <script>
+    // Function to show/hide inputs based on selected calculation type.
+    function updateFields() {
+      var calcType = document.getElementById("calcType").value;
+      if (calcType === "diopterCloseFocus") {
+        document.getElementById("diopterStrengthInput").style.display = "block";
+        document.getElementById("diopterCloseFocusInput").style.display = "none";
+      } else if (calcType === "diopterStrength") {
+        document.getElementById("diopterStrengthInput").style.display = "none";
+        document.getElementById("diopterCloseFocusInput").style.display = "block";
+      }
+    }
+    
+    // Performs the diopter calculation based on selected type.
+    function calculateDiopter() {
+      var calcType = document.getElementById("calcType").value;
+      var closeFocus = parseFloat(document.getElementById("closeFocus").value);
+      var resultDiv = document.getElementById("result");
+      
+      if (isNaN(closeFocus) || closeFocus <= 0) {
+        alert("Please enter a valid Close Focus distance.");
+        return;
+      }
+      
+      // Mode 1: Diopter Close Focus (user inputs diopter strength)
+      if (calcType === "diopterCloseFocus") {
+        var diopterStrength = parseFloat(document.getElementById("inputDiopterStrength").value);
+        if (isNaN(diopterStrength) || diopterStrength === 0) {
+          alert("Please enter a valid Diopter Strength.");
+          return;
+        }
+        var diopterCloseFocus = closeFocus / (diopterStrength * closeFocus + 1);
+        var diopterInfinity = 1 / diopterStrength;
+        
+        resultDiv.innerHTML = "<h2>Results</h2>" +
+          "<p><strong>Diopter Close Focus:</strong> " + diopterCloseFocus.toFixed(2) + "</p>" +
+          "<p><strong>Diopter Infinity:</strong> " + diopterInfinity.toFixed(2) + "</p>" +
+          "<p><strong>Diopter Strength:</strong> " + diopterStrength.toFixed(2) + "</p>" ;
+        
+      // Mode 2: Diopter Strength (user inputs diopter close focus)
+      } else if (calcType === "diopterStrength") {
+        var diopterCloseFocus = parseFloat(document.getElementById("inputDiopterCloseFocus").value);
+        if (isNaN(diopterCloseFocus) || diopterCloseFocus === 0 || diopterCloseFocus >= closeFocus) {
+          alert("Please enter a valid Diopter Close Focus (less than Close Focus).");
+          return;
+        }
+        var diopterStrength = (closeFocus - diopterCloseFocus) / (diopterCloseFocus * closeFocus);
+        var diopterInfinity = 1 / diopterStrength;
+        
+        resultDiv.innerHTML = "<h2>Results</h2>" +
+          "<p><strong>Calculated Diopter Strength:</strong> " + diopterStrength.toFixed(2) + "</p>" +
+          "<p><strong>Diopter Infinity:</strong> " + diopterInfinity.toFixed(2) + "</p>" +
+          "<p><strong>Diopter Close Focus:</strong> " + diopterCloseFocus.toFixed(2) + "</p>";
+      }
+    }
+  </script>
+</body>
+</html>
