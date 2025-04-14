@@ -1,0 +1,118 @@
+  <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diffraction Calculator</title>
+  <style>
+    body {
+      font-family: Helvetica Neue, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 15px;
+      background: #e9e9e9;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Diffraction Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateDOF();">
+      <label for="sensorWidth">Sensor Width (mm):</label>
+      <input type="number" id="sensorWidth" placeholder="e.g. 36" step="any">
+      
+      <label for="photositeWidth">Horizontal Pixel:</label>
+      <input type="number" id="photositeWidth" placeholder="e.g. 4096" step="any">
+      
+      <label for="aperture">Aperture:</label>
+      <input type="number" id="aperture" placeholder="e.g. 4" step="any">
+      
+      <button type="submit">Calculate</button>
+    </form>
+    
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="footer">
+    Version 1.0 - Written by Kagan Kerimoglu
+  </div>
+  
+  <script>
+    function calculateDOF() {
+      var sensorWidth = parseFloat(document.getElementById("sensorWidth").value);
+      var photositeWidth = parseFloat(document.getElementById("photositeWidth").value);
+      var aperture = parseFloat(document.getElementById("aperture").value);
+      
+      if (isNaN(sensorWidth) || isNaN(photositeWidth) || isNaN(aperture)) {
+        alert("Please fill in all fields with valid numbers.");
+        return;
+      }
+
+      var airydiskDiameter = 2.44 * (550/1000) * aperture;
+
+      var photositePitch = (sensorWidth / photositeWidth) * 1000;
+      
+      var diffractionLimitation = photositePitch * 2.5;
+      
+      var diffractionLimitedFStop = diffractionLimitation / (2.44 * (550/1000));
+
+      var isDiffractionLimited = diffractionLimitation <= airydiskDiameter;
+
+
+      var resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "<h2>Results</h2>" +
+        "<p><strong>Diffraction Limited:</strong> " + (isDiffractionLimited ? "Yes" : "No") + "</p>" +
+        "<p><strong>Diffraction Limited F-Stop:</strong> " + diffractionLimitedFStop.toFixed(1) + "</p>" +
+        "<hr>" +
+        "<p><strong>Pixel Pitch:</strong> " + photositePitch.toFixed(2) + " µm</p>" +
+        "<p><strong>Diffraction Limitation:</strong> " + diffractionLimitation.toFixed(2) + " µm</p>" +
+        "<p><strong>Airy Disk Diameter:</strong> " + airydiskDiameter.toFixed(2) + " µm</p>" ;
+    }
+  </script>
+</body>
+</html>
