@@ -2,19 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Responsive viewport meta tag -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cine Calculator</title>
   <style>
+    /* Use flexbox on the body for centering and responsiveness */
     body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
+      font-family: Helvetica Neue, sans-serif;
       background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    /* Container similar to the dofcalculator */
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
     }
     h1 {
       color: #333;
+      margin-top: 0;
     }
     ul {
       list-style: none;
-      padding-left: 0;
+      padding: 0;
     }
     li {
       margin-bottom: 10px;
@@ -30,12 +49,14 @@
   </style>
 </head>
 <body>
-  <h1>Cine Calculator</h1>
-  <ul>
-    <li><a href="diffraction/">Diffraction Calculator</a></li>
-    <li><a href="fov/">Field of View Calculator</a></li>
-    <li><a href="dof/">Depth of Field Calculator</a></li>
-    <li><a href="shutter/">Shutter Calculator</a></li>
-  </ul>
+  <div class="container">
+    <h1>Cine Calculator</h1>
+    <ul>
+      <li><a href="diffraction/">Diffraction Calculator</a></li>
+      <li><a href="fov/">Field of View Calculator</a></li>
+      <li><a href="dof/">Depth of Field Calculator</a></li>
+      <li><a href="shutter/">Shutter Calculator</a></li>
+    </ul>
+  </div>
 </body>
 </html>
