@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exposure Calculator</title>
+  <style>
+    body {
+      font-family: Helvetica Neue, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 15px;
+      background: #e9e9e9;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body onload="updateFields()">
+  <div class="container">
+    <h1>Exposure Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateExposure();">
+      <label for="calcType">Calculation Type:</label>
+      <select id="calcType" onchange="updateFields()">
+        <option value="exposureBetweenFStops">Exposure Between F-Stops</option>
+        <option value="fstopFromExposure">F-Stop from Exposure Difference</option>
+      </select>
+
+      <!-- Common Input -->
+      <label for="fstopSource">F-Stop Source:</label>
+      <input type="number" id="fstopSource" placeholder="e.g. 4" step="any">
+
+      <!-- Conditional Input for ΔE± Between F-Stops Calculation -->
+      <div id="exposureBetweenFStopsInput">
+        <label for="fstopDestination">F-Stop Destination:</label>
+        <input type="number" id="fstopDestination" placeholder="e.g. 2.8" step="any">
+      </div>
+      
+      <!-- Conditional Input for F-Stop from ΔE± Calculation -->
+      <div id="fstopFromExposureInput">
+        <label for="exposureDifference">Exposure Difference (ΔE±):</label>
+        <input type="number" id="exposureDifference" placeholder="e.g. 2" step="any">
+      </div>
+
+      <button type="submit">Calculate</button>
+    </form>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="footer">
+    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+  </div>
+
+  <script>
+    // Update which inputs are shown based on the selected calculation type.
+    function updateFields() {
+      var calcType = document.getElementById("calcType").value;
+      if (calcType === "exposureBetweenFStops") {
+        document.getElementById("exposureBetweenFStopsInput").style.display = "block";
+        document.getElementById("fstopFromExposureInput").style.display = "none";
+      } else if (calcType === "fstopFromExposure") {
+        document.getElementById("exposureBetweenFStopsInput").style.display = "none";
+        document.getElementById("fstopFromExposureInput").style.display = "block";
+      }
+    }
+    
+    // Performs the exposure calculations based on the selected type.
+    function calculateExposure() {
+      var calcType = document.getElementById("calcType").value;
+      var resultDiv = document.getElementById("result");
+      var fstopSource = parseFloat(document.getElementById("fstopSource").value);
+      
+      if (isNaN(fstopSource) || fstopSource <= 0) {
+        alert("Please enter a valid F-Stop Source.");
+        return;
+      }
+      
+      var result;
+      if (calcType === "exposureBetweenFStops") {
+        var fstopDestination = parseFloat(document.getElementById("fstopDestination").value);
+        if (isNaN(fstopDestination) || fstopDestination <= 0) {
+          alert("Please enter a valid F-Stop Destination.");
+          return;
+        }
+        // Calculate ΔE± = 2 * log(fstopSource / fstopDestination) / log(2)
+        result = 2 * Math.log(fstopSource / fstopDestination) / Math.log(2);
+        resultDiv.innerHTML = "<h2>Results</h2>" +
+          "<p><strong>Exposure Difference (ΔE±):</strong> " + result.toFixed(2) + "</p>" +
+          "<p><strong>F-Stop Source:</strong> " + fstopSource.toFixed(2) + "</p>" +
+          "<p><strong>F-Stop Destination:</strong> " + fstopDestination.toFixed(2) + "</p>";
+      } else if (calcType === "fstopFromExposure") {
+        var exposureDifference = parseFloat(document.getElementById("exposureDifference").value);
+        if (isNaN(exposureDifference)) {
+          alert("Please enter a valid Exposure Difference (ΔE±).");
+          return;
+        }
+        // Calculate F-Stop Destination = fstopSource / (2^(exposureDifference/2))
+        result = fstopSource / Math.pow(2, exposureDifference / 2);
+        resultDiv.innerHTML = "<h2>Results</h2>" +
+          "<p><strong>F-Stop Destination:</strong> " + result.toFixed(2) + "</p>" +
+          "<p><strong>F-Stop Source:</strong> " + fstopSource.toFixed(2) + "</p>" +
+          "<p><strong>Exposure Difference (ΔE±):</strong> " + exposureDifference.toFixed(2) + "</p>";
+      }
+    }
+  </script>
+</body>
+</html>
