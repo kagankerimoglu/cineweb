@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CCT Calculator</title>
+  <style>
+    body {
+      font-family: Helvetica Neue, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 15px;
+      background: #e9e9e9;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body onload="updateFields()">
+  <div class="container">
+    <h1>CCT Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateConversion();">
+      <label for="convType">Conversion Type:</label>
+      <select id="convType" onchange="updateFields()">
+        <option value="xyToCct">CIE 1931 xy to CCT</option>
+        <option value="cctToXy">CCT to CIE 1931 xy</option>
+      </select>
+      
+      <div id="xyInputs">
+        <label for="x">x:</label>
+        <input type="number" id="x" placeholder="e.g. 0.3127" step="any">
+        <label for="y">y:</label>
+        <input type="number" id="y" placeholder="e.g. 0.3290" step="any">
+      </div>
+      
+      <div id="cctInput">
+        <label for="cct">CCT (K):</label>
+        <input type="number" id="cct" placeholder="e.g. 6504" step="any">
+      </div>
+      
+      <button type="submit">Convert</button>
+    </form>
+    
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="footer">
+    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+  </div>
+  
+  <script>
+    function updateFields() {
+      var type = document.getElementById("convType").value;
+      if (type === "xyToCct") {
+        document.getElementById("xyInputs").style.display = "block";
+        document.getElementById("cctInput").style.display = "none";
+      } else {
+        document.getElementById("xyInputs").style.display = "none";
+        document.getElementById("cctInput").style.display = "block";
+      }
+      document.getElementById("result").innerHTML = "";
+    }
+    
+    function calculateConversion() {
+      var type = document.getElementById("convType").value;
+      var resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+      if (type === "xyToCct") {
+        var x = parseFloat(document.getElementById("x").value);
+        var y = parseFloat(document.getElementById("y").value);
+        if (isNaN(x) || isNaN(y) || (y - 0.1858) === 0) {
+          alert("Please enter valid x and y values.");
+          return;
+        }
+        var n = (x - 0.3320) / (y - 0.1858);
+        var CCT = -449 * Math.pow(n, 3) + 3525 * Math.pow(n, 2) - 6823.3 * n + 5520.33;
+        resultDiv.innerHTML = `<h2>Results</h2>` +
+        `<p><strong>CCT:</strong> ${CCT.toFixed(0)} K</p>` +
+    	`<p>${CCT}</p>`;
+      } else if (type === "cctToXy") {
+        var CCT = parseFloat(document.getElementById("cct").value);
+        if (isNaN(CCT) || CCT < 4000 || CCT > 25000) {
+          alert("Please enter a valid CCT between 4000 and 25000.");
+          return;
+        }
+        var xVal;
+        if (CCT <= 7000) {
+          xVal = (-4.607 * Math.pow(10, 9) / Math.pow(CCT, 3)) + (2.9678 * Math.pow(10, 6) / Math.pow(CCT, 2)) + (0.09911 * Math.pow(10, 3) / CCT) + 0.244063;
+        } else {
+          xVal = (-2.0064 * Math.pow(10, 9) / Math.pow(CCT, 3)) + (1.9018 * Math.pow(10, 6) / Math.pow(CCT, 2)) + (0.24748 * Math.pow(10, 3) / CCT) + 0.23704;
+        }
+        var yVal = -3 * Math.pow(xVal, 2) + 2.87 * xVal - 0.275;
+        resultDiv.innerHTML = `<h2>Results</h2>` + 
+		`<p><strong>xy:</strong> (${xVal.toFixed(4)}, ${yVal.toFixed(4)})</p>` +
+		`<p>${xVal}, ${yVal}</p>` ;
+      }
+    }
+  </script>
+</body>
+</html>
