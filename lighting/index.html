@@ -71,9 +71,24 @@
         <option value="distance">Distance from Beam Angle & Beam Diameter</option>
       </select>
 
+      <!-- New mode selector for fall-off -->
+      <div id="fallOffModeContainer" style="display:none">
+        <label for="fallOffMode">Mode:</label>
+        <select id="fallOffMode" onchange="updateFields()">
+          <option value="intensity">Illuminance (lux/fc)</option>
+          <option value="fstop">F-Stop</option>
+        </select>
+      </div>
+
       <div id="intensityInput">
-        <label for="intensity">Intensity (lux/fc):</label>
+        <label for="intensity">Illuminance (lux/fc):</label>
         <input type="number" id="intensity" placeholder="e.g. 1000" step="any">
+      </div>
+
+      <!-- F-Stop input for fall-off -->
+      <div id="fstopInput" style="display:none">
+        <label for="fstop">F-Stop:</label>
+        <input type="number" id="fstop" placeholder="e.g. 16" step="any">
       </div>
 
       <div id="distanceInput">
@@ -108,17 +123,24 @@
   </div>
 
   <div class="footer">
-    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+    Version 1.1<br>(C) 2025 Kagan Kerimoglu
   </div>
 
   <script>
     function updateFields() {
       const type = document.getElementById("calcType").value;
-      ["intensityInput","distanceInput","distance1Input","distance2Input","beamAngleInput","beamDiameterInput"]
+      // Hide all inputs initially
+      ["fallOffModeContainer","intensityInput","fstopInput","distanceInput","distance1Input","distance2Input","beamAngleInput","beamDiameterInput"]
         .forEach(id => document.getElementById(id).style.display = "none");
 
       if (type === "fallOff") {
-        document.getElementById("intensityInput").style.display = "block";
+        document.getElementById("fallOffModeContainer").style.display = "block";
+        const mode = document.getElementById("fallOffMode").value;
+        if (mode === "intensity") {
+          document.getElementById("intensityInput").style.display = "block";
+        } else {
+          document.getElementById("fstopInput").style.display = "block";
+        }
         document.getElementById("distance1Input").style.display = "block";
         document.getElementById("distance2Input").style.display = "block";
       } else if (type === "diameter") {
@@ -150,19 +172,26 @@
 
       try {
         if (type === "fallOff") {
-          const I1 = getValue("intensity", "intensity");
+          const mode = document.getElementById("fallOffMode").value;
           const d1 = getValue("distance1", "distance 1");
           const d2 = getValue("distance2", "distance 2");
           if (d2 === 0) showError("Distance 2 must be non‑zero.");
 
-          // new intensity via inverse‑square law
-          const I2 = I1 * Math.pow((d1 / d2), 2);
-          // change in stops (factor of two)
-          const stops = Math.log2(I1 / I2);
-
-          resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Fall‑Off Intensity:</strong> ${I2.toFixed(3)}</p>
-            <p><strong>Change in Stops:</strong> ${stops.toFixed(2)} stops</p>`;
+          if (mode === "intensity") {
+            const I1 = getValue("intensity", "intensity");
+            const I2 = I1 * Math.pow((d1 / d2), 2);
+            const stops = Math.log2(I1 / I2);
+            resultDiv.innerHTML = `<h2>Results</h2>
+              <p><strong>Fall‑Off Intensity:</strong> ${I2.toFixed(3)}</p>
+              <p><strong>Change in Stops:</strong> ${stops.toFixed(2)} stops</p>`;
+          } else {
+            const f1 = getValue("fstop", "f-stop");
+            const stopsChange = 2 * Math.log2(d1 / d2);
+            const f2 = f1 * Math.pow(2, stopsChange / 2);
+            resultDiv.innerHTML = `<h2>Results</h2>
+              <p><strong>New F‑Stop at Distance 2:</strong> f/${f2.toFixed(2)}</p>
+              <p><strong>Change in Stops:</strong> ${stopsChange.toFixed(2)} stops</p>`;
+          }
 
         } else if (type === "diameter") {
           const angle = getValue("beamAngle", "beam angle");
