@@ -65,15 +65,14 @@
     <form onsubmit="event.preventDefault(); calculateLight();">
       <label for="calcType">Calculation Type:</label>
       <select id="calcType" onchange="updateFields()">
-        <option value="inverseSquare">Inverse Square Law</option>
-        <option value="fallOff">Light Fall‑Off Between Two Distances</option>
+        <option value="fallOff">Light Intensity Fall‑Off</option>
         <option value="diameter">Beam Diameter from Beam Angle & Distance</option>
         <option value="angle">Beam Angle from Beam Diameter & Distance</option>
         <option value="distance">Distance from Beam Angle & Beam Diameter</option>
       </select>
 
       <div id="intensityInput">
-        <label for="intensity">Intensity:</label>
+        <label for="intensity">Intensity (lux/fc):</label>
         <input type="number" id="intensity" placeholder="e.g. 1000" step="any">
       </div>
 
@@ -115,15 +114,10 @@
   <script>
     function updateFields() {
       const type = document.getElementById("calcType").value;
-      // hide all
       ["intensityInput","distanceInput","distance1Input","distance2Input","beamAngleInput","beamDiameterInput"]
         .forEach(id => document.getElementById(id).style.display = "none");
 
-      // show common or specific
-      if (type === "inverseSquare") {
-        document.getElementById("intensityInput").style.display = "block";
-        document.getElementById("distanceInput").style.display = "block";
-      } else if (type === "fallOff") {
+      if (type === "fallOff") {
         document.getElementById("intensityInput").style.display = "block";
         document.getElementById("distance1Input").style.display = "block";
         document.getElementById("distance2Input").style.display = "block";
@@ -142,14 +136,12 @@
     function calculateLight() {
       const type = document.getElementById("calcType").value;
       const resultDiv = document.getElementById("result");
-      let res;
 
       function showError(msg) {
         alert(msg);
         throw new Error(msg);
       }
 
-      // read helpers
       function getValue(id, name) {
         const v = parseFloat(document.getElementById(id).value);
         if (isNaN(v)) showError(`Please enter a valid ${name}.`);
@@ -157,52 +149,47 @@
       }
 
       try {
-        if (type === "inverseSquare") {
-          const I = getValue("intensity", "intensity");
-          const d = getValue("distance", "distance");
-          if (d === 0) showError("Distance must be non‑zero.");
-          res = I / (d * d);
-          resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Resulting Intensity:</strong> ${res.toFixed(3)}</p>`;
-
-        } else if (type === "fallOff") {
-          const I = getValue("intensity", "intensity");
+        if (type === "fallOff") {
+          const I1 = getValue("intensity", "intensity");
           const d1 = getValue("distance1", "distance 1");
           const d2 = getValue("distance2", "distance 2");
           if (d2 === 0) showError("Distance 2 must be non‑zero.");
-          res = I * Math.pow((d1 / d2), 2);
+
+          // new intensity via inverse‑square law
+          const I2 = I1 * Math.pow((d1 / d2), 2);
+          // change in stops (factor of two)
+          const stops = Math.log2(I1 / I2);
+
           resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Fall‑Off Intensity:</strong> ${res.toFixed(3)}</p>`;
+            <p><strong>Fall‑Off Intensity:</strong> ${I2.toFixed(3)}</p>
+            <p><strong>Change in Stops:</strong> ${stops.toFixed(2)} stops</p>`;
 
         } else if (type === "diameter") {
           const angle = getValue("beamAngle", "beam angle");
           const d = getValue("distance", "distance");
-          // convert to radians
-          res = 2 * d * Math.tan(angle * Math.PI / 180 / 2);
+          const diameter = 2 * d * Math.tan(angle * Math.PI / 180 / 2);
           resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Beam Diameter:</strong> ${res.toFixed(4)}</p>`;
+            <p><strong>Beam Diameter:</strong> ${diameter.toFixed(4)}</p>`;
 
         } else if (type === "angle") {
           const diameter = getValue("beamDiameter", "beam diameter");
           const d = getValue("distance", "distance");
           if (d === 0) showError("Distance must be non‑zero.");
-          // atan returns radians
-          res = 2 * (Math.atan(diameter / (2 * d))) * 180 / Math.PI;
+          const angle = 2 * Math.atan(diameter / (2 * d)) * 180 / Math.PI;
           resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Beam Angle:</strong> ${res.toFixed(4)}°</p>`;
+            <p><strong>Beam Angle:</strong> ${angle.toFixed(4)}°</p>`;
 
         } else if (type === "distance") {
           const diameter = getValue("beamDiameter", "beam diameter");
           const angle = getValue("beamAngle", "beam angle");
-          // convert to radians
           const rad = angle * Math.PI / 180 / 2;
           if (Math.tan(rad) === 0) showError("Beam angle too small.");
-          res = diameter / (2 * Math.tan(rad));
+          const distance = diameter / (2 * Math.tan(rad));
           resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Distance:</strong> ${res.toFixed(4)}</p>`;
+            <p><strong>Distance:</strong> ${distance.toFixed(4)}</p>`;
         }
       } catch (e) {
-        // error already shown
+        // error already alerted
       }
     }
   </script>
