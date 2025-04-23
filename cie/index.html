@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CIE Calculator</title>
+  <style>
+    body {
+      font-family: Helvetica Neue, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 15px;
+      background: #e9e9e9;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body onload="updateFields()">
+  <div class="container">
+    <h1>CIE Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateCIE();">
+      <label for="calcType">Calculation Type:</label>
+      <select id="calcType" onchange="updateFields()">
+        <option value="xyToCCT">CIE 1931 xy → CCT & Δuv</option>
+        <option value="CCTToXY">CCT → CIE 1931 xy</option>
+      </select>
+      
+      <!-- xy inputs -->
+      <div id="xyInputs">
+        <label for="xValue">x:</label>
+        <input type="number" id="xValue" placeholder="e.g. 0.3127" step="any">
+        <label for="yValue">y:</label>
+        <input type="number" id="yValue" placeholder="e.g. 0.3290" step="any">
+      </div>
+      
+      <!-- CCT input -->
+      <div id="CCTInput">
+        <label for="cctValue">CCT (K):</label>
+        <input type="number" id="cctValue" placeholder="e.g. 3200" step="any">
+      </div>
+      
+      <button type="submit">Calculate</button>
+    </form>
+    
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="footer">
+    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+  </div>
+  
+  <script>
+    function updateFields() {
+      const mode = document.getElementById("calcType").value;
+      document.getElementById("xyInputs").style.display = (mode === "xyToCCT") ? "block" : "none";
+      document.getElementById("CCTInput").style.display = (mode === "CCTToXY") ? "block" : "none";
+    }
+
+    function calculateCIE() {
+      const mode = document.getElementById("calcType").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      // Helper functions ported from Python
+      function xy_to_CCT_mccamy1992(x,y) {
+        const n = (x - 0.3320) / (y - 0.1858);
+        return -449 * n**3 + 3525 * n**2 - 6823.3 * n + 5520.33;
+      }
+      function xy_to_CCT_hernandez1999(x,y) {
+        let n = (x - 0.3366)/(y - 0.1735);
+        let CCT = -949.86315
+          + 6253.80338 * Math.exp(-n/0.92159)
+          +   28.70599 * Math.exp(-n/0.20039)
+          +    0.00004 * Math.exp(-n/0.07125);
+        if (CCT > 50000) {
+          n = (x - 0.3356)/(y - 0.1691);
+          CCT = 36284.48953
+            +    0.00228 * Math.exp(-n/0.07861)
+            + 5.4535e-36 * Math.exp(-n/0.01543);
+        }
+        return CCT;
+      }
+      function xy_to_CCT(x,y) {
+        const cMc = xy_to_CCT_mccamy1992(x,y);
+        if (cMc <= 6510) return [cMc, 'McCamy'];
+        return [xy_to_CCT_hernandez1999(x,y), 'Hernández-André'];
+      }
+      function xy_to_duv(x,y) {
+        const u = 4*x/(-2*x + 12*y + 3);
+        const v = 6*y/(-2*x + 12*y + 3);
+        const k = [-0.00616793, 0.0893944, -0.5179722, 1.5317403, -2.4243787, 1.925865, -0.471106];
+        const Lfp = Math.hypot(u - 0.292, v - 0.24);
+        const a = Math.acos((u - 0.292)/Lfp);
+        const Lbb = k[0]*a**6 + k[1]*a**5 + k[2]*a**4 + k[3]*a**3 + k[4]*a**2 + k[5]*a + k[6];
+        return Lfp - Lbb;
+      }
+
+      function CCT_to_xy_illuminant_D(CCT) {
+        let x;
+        if (CCT >= 4000 && CCT <= 7000) {
+          x = -4.607e9/CCT**3 + 2.9678e6/CCT**2 + 0.09911e3/CCT + 0.244063;
+        } else if (CCT > 7000 && CCT <= 25000) {
+          x = -2.0064e9/CCT**3 + 1.9018e6/CCT**2 + 0.24748e3/CCT + 0.23704;
+        } else {
+          throw 'CCT must be in [4000,25000] K';
+        }
+        const y = -3*x**2 + 2.87*x - 0.275;
+        return [x,y];
+      }
+      function CCT_to_xy_kang2002(CCT) {
+        if (CCT < 1667 || CCT > 25000) throw 'CCT must be in [1667,25000] K';
+        let x;
+        if (CCT <= 4000) {
+          x = -0.2661239e9/CCT**3 - 0.2343589e6/CCT**2 + 0.8776956e3/CCT + 0.179910;
+        } else {
+          x = -3.0258469e9/CCT**3 + 2.1070379e6/CCT**2 + 0.2226347e3/CCT + 0.240390;
+        }
+        let y;
+        if (CCT <= 2222) {
+          y = -1.1063814*x**3 - 1.3481102*x**2 + 2.18555832*x - 0.20219683;
+        } else if (CCT <= 4000) {
+          y = -0.9549476*x**3 - 1.37418593*x**2 + 2.09137015*x - 0.16748867;
+        } else {
+          y =  3.0817580*x**3 - 5.8733867*x**2 + 3.75112997*x - 0.37001483;
+        }
+        return [x,y];
+      }
+      function CCT_to_xy(CCT) {
+        if (CCT < 1667 || CCT > 25000) throw 'CCT must be in [1667,25000] K';
+        if (CCT <= 4875) return [...CCT_to_xy_kang2002(CCT), 'Kang'];
+        return [...CCT_to_xy_illuminant_D(CCT), 'Illuminant D'];
+      }
+
+      try {
+        if (mode === 'xyToCCT') {
+          const x = parseFloat(document.getElementById("xValue").value);
+          const y = parseFloat(document.getElementById("yValue").value);
+          if (isNaN(x) || isNaN(y)) throw 'Please enter valid x and y.';
+          const [cct, method] = xy_to_CCT(x,y);
+          const duv = xy_to_duv(x,y);
+          let html = '<h2>Results</h2>';
+          html += `<p><strong>CCT (rounded):</strong> ${cct.toFixed(0)} K</p>`;
+          html += `<p><strong>Δuv (rounded):</strong> ${duv.toFixed(4)}</p>`;
+          html += `<p><strong>CCT (raw):</strong> ${cct}</p>`;
+          html += `<p><strong>Δuv (raw):</strong> ${duv}</p>`;
+          html += `<p><em>Computed using ${method} method</em></p>`;
+          if (cct < 2856) {
+            html += `<p style="color:red;">Below 2856 K is outside maximum absolute error range of under ±2 K.</p>`;
+          }
+          resultDiv.innerHTML = html;
+
+        } else {
+          const CCT = parseFloat(document.getElementById("cctValue").value);
+          if (isNaN(CCT)) throw 'Please enter a valid CCT.';
+          const [x, y, method] = CCT_to_xy(CCT);
+          let html = '<h2>Results</h2>';
+          html += `<p><strong>CIE 1931 xy (rounded):</strong> (${x.toFixed(4)}, ${y.toFixed(4)})</p>`;
+          html += `<p><strong>CIE 1931 xy (raw):</strong> (${x}, ${y})</p>`;
+          html += `<p><em>Computed using ${method} method</em></p>`;
+          resultDiv.innerHTML = html;
+        }
+      } catch (e) {
+        alert(e);
+      }
+    }
+  </script>
+</body>
+</html>
