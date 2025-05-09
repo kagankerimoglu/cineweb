@@ -281,9 +281,15 @@
       const sensorDiag = Math.sqrt(sw*sw + sh*sh);
       const coc = sensorDiag / 1500;
       const hyper = fl + (fl*fl)/(fNum * coc);
-      const far = (hyper * fd) / (hyper - (fd - fl));
-      const near = (hyper * fd) / (hyper + (fd - fl));
-      const total = far - near;
+      let far = (hyper * fd) / (hyper - (fd - fl));
+      let near = (hyper * fd) / (hyper + (fd - fl));
+      let total = far - near;
+
+      if (fd >= hyper || (total < 0 && far < 0)) {
+        total = Infinity;
+        far = Infinity;
+      }
+
       const hypernear = hyper / 2;
 
       document.getElementById('result').innerHTML = `<h2>Results</h2>
@@ -314,9 +320,15 @@
       const coc = diflimit/1000;
       const airy = 2.44 * wl * fNum;
       const hyper = fl + (fl*fl)/(fNum*coc);
-      const far = (hyper * fd) / (hyper - (fd - fl));
-      const near = (hyper * fd) / (hyper + (fd - fl));
-      const total = far - near;
+      let far = (hyper * fd) / (hyper - (fd - fl));
+      let near = (hyper * fd) / (hyper + (fd - fl));
+      let total = far - near;
+
+      if (fd >= hyper || (total < 0 && far < 0)) {
+        total = Infinity;
+        far = Infinity;
+      }
+
       const hypernear = hyper / 2;
       const sweetspotmin = pitch / (2.44 * wl);
       const sweetspotmax = (pitch*2) / (2.44 * wl);
