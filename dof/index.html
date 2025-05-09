@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Depth of Field Calculator</title>
   <style>
     body {
@@ -24,15 +24,13 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    h1 {
-      text-align: center;
-    }
+    h1 { text-align: center; }
     label {
       display: block;
       margin-top: 15px;
       font-weight: bold;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -62,73 +60,281 @@
 <body>
   <div class="container">
     <h1>Depth of Field Calculator</h1>
-    <form onsubmit="event.preventDefault(); calculateDOF();">
-      <label for="sensorWidth">Sensor Width (mm):</label>
-      <input type="number" id="sensorWidth" placeholder="e.g. 36" step="any">
+    <form onsubmit="event.preventDefault(); calculateDoF();">
+      <label for="calcType">Calculation Type:</label>
+      <select id="calcType" onchange="toggleInputs();">
+        <option value="viewing">Viewing Distance</option>
+        <option value="photosite">Photosite Pitch</option>
+      </select>
       
-      <label for="sensorHeight">Sensor Height (mm):</label>
-      <input type="number" id="sensorHeight" placeholder="e.g. 24" step="any">
-      
-      <label for="focusingDistance">Focusing Distance (meters):</label>
-      <input type="number" id="focusingDistance" placeholder="e.g. 2" step="any">
-      
-      <label for="focalLength">Focal Length (mm):</label>
-      <input type="number" id="focalLength" placeholder="e.g. 50" step="any">
-      
-      <label for="aperture">Aperture:</label>
-      <input type="number" id="aperture" placeholder="e.g. 4" step="any">
-      
+      <div id="viewingInputs">
+        <label for="fRatio">Focal Ratio (f-number):</label>
+        <select id="fRatio" onchange="onFNumberChange('fRatio')">
+          <!-- Full and partial stops -->
+          <option>f/1.4</option>
+          <option>f/1.6</option>
+          <option>f/1.7</option>
+          <option>f/1.8</option>
+          <option>f/2.0</option>
+          <option>f/2.2</option>
+          <option>f/2.4</option>
+          <option>f/2.5</option>
+          <option>f/2.8</option>
+          <option>f/3.2</option>
+          <option>f/3.3</option>
+          <option>f/3.5</option>
+          <option selected>f/4.0</option>
+          <option>f/4.5</option>
+          <option>f/4.8</option>
+          <option>f/5.0</option>
+          <option>f/5.6</option>
+          <option>f/6.3</option>
+          <option>f/6.7</option>
+          <option>f/7.1</option>
+          <option>f/8.0</option>
+          <option>f/9.0</option>
+          <option>f/9.5</option>
+          <option>f/10</option>
+          <option>f/11</option>
+          <option>f/13</option>
+          <option>f/13.5</option>
+          <option>f/14</option>
+          <option>f/16</option>
+          <option>f/18</option>
+          <option>f/19</option>
+          <option>f/20</option>
+          <option>f/22</option>
+          <option>Custom</option>
+        </select>
+        <input type="number" id="fRatioCustom" step="any" placeholder="Custom f-number" style="display:none; margin-top:5px;">
+
+        <label for="focalLength">Focal Length (mm):</label>
+        <input type="number" id="focalLength" step="any" placeholder="e.g. 50">
+
+        <label for="focusDistance">Focusing Distance (m):</label>
+        <input type="number" id="focusDistance" step="any" placeholder="e.g. 5">
+
+        <label for="sensorWidth">Sensor Width (mm):</label>
+        <input type="number" id="sensorWidth" step="any" placeholder="e.g. 36">
+
+        <label for="sensorHeight">Sensor Height (mm):</label>
+        <input type="number" id="sensorHeight" step="any" placeholder="e.g. 24">
+      </div>
+
+      <div id="photositeInputs" style="display:none;">
+        <label for="fRatioP">Focal Ratio (f-number):</label>
+        <select id="fRatioP" onchange="onFNumberChange('fRatioP')">
+          <option>f/1.4</option>
+          <option>f/1.6</option>
+          <option>f/1.7</option>
+          <option>f/1.8</option>
+          <option>f/2.0</option>
+          <option>f/2.2</option>
+          <option>f/2.4</option>
+          <option>f/2.5</option>
+          <option>f/2.8</option>
+          <option>f/3.2</option>
+          <option>f/3.3</option>
+          <option>f/3.5</option>
+          <option selected>f/4.0</option>
+          <option>f/4.5</option>
+          <option>f/4.8</option>
+          <option>f/5.0</option>
+          <option>f/5.6</option>
+          <option>f/6.3</option>
+          <option>f/6.7</option>
+          <option>f/7.1</option>
+          <option>f/8.0</option>
+          <option>f/9.0</option>
+          <option>f/9.5</option>
+          <option>f/10</option>
+          <option>f/11</option>
+          <option>f/13</option>
+          <option>f/13.5</option>
+          <option>f/14</option>
+          <option>f/16</option>
+          <option>f/18</option>
+          <option>f/19</option>
+          <option>f/20</option>
+          <option>f/22</option>
+          <option>Custom</option>
+        </select>
+        <input type="number" id="fRatioPCustom" step="any" placeholder="Custom f-number" style="display:none; margin-top:5px;">
+
+        <label for="focalLengthP">Focal Length (mm):</label>
+        <input type="number" id="focalLengthP" step="any" placeholder="e.g. 50">
+
+        <label for="focusDistanceP">Focusing Distance (m):</label>
+        <input type="number" id="focusDistanceP" step="any" placeholder="e.g. 5">
+
+        <label for="sensorWidthP">Sensor Width (mm):</label>
+        <input type="number" id="sensorWidthP" step="any" placeholder="e.g. 36">
+
+        <label for="photositeCount">Photosite Width (pixels):</label>
+        <input type="number" id="photositeCount" step="any" placeholder="e.g. 6000">
+
+        <label for="diffFactor">Diffraction Factor:</label>
+        <input type="number" id="diffFactor" value="2.5" step="any" placeholder="e.g. 2.5">
+
+        <label for="wavelength">Wavelength (nm):</label>
+        <input type="number" id="wavelength" value="550" step="any" placeholder="e.g. 550">
+      </div>
+
       <button type="submit">Calculate</button>
     </form>
     
     <div class="result" id="result"></div>
+    <br>
+    <div class="view-on-github">
+      <a href="https://github.com/kagankerimoglu/cineweb/blob/main/dof/sensormodes.md" target="_blank">Common Formats</a>
+    </div>
   </div>
 
   <div class="footer">
-  Version 1.0<br>(C) 2025 Kagan Kerimoglu
+    Version 2.0<br>(C) 2025 Kagan Kerimoglu
   </div>
   
   <script>
-    function calculateDOF() {
-      var sensorWidth = parseFloat(document.getElementById("sensorWidth").value);
-      var sensorHeight = parseFloat(document.getElementById("sensorHeight").value);
-      var focusingDistanceMeters = parseFloat(document.getElementById("focusingDistance").value);
-      var focalLength = parseFloat(document.getElementById("focalLength").value);
-      var aperture = parseFloat(document.getElementById("aperture").value);
-      
-      if (isNaN(sensorWidth) || isNaN(sensorHeight) || isNaN(focusingDistanceMeters) ||
-          isNaN(focalLength) || isNaN(aperture)) {
-        alert("Please fill in all fields with valid numbers.");
-        return;
+    // Utility
+    function mmToM(mm) { return mm / 1000; }
+
+    // Show/hide custom f-number input
+    function onFNumberChange(id) {
+      const select = document.getElementById(id);
+      const custom = document.getElementById(id + (id.endsWith('P') ? 'Custom' : 'Custom'));
+      custom.style.display = select.value === 'Custom' ? 'block' : 'none';
+    }
+
+    // Toggle between calculation types
+    function toggleInputs() {
+      const type = document.getElementById('calcType').value;
+      document.getElementById('viewingInputs').style.display = type === 'viewing' ? 'block' : 'none';
+      document.getElementById('photositeInputs').style.display = type === 'photosite' ? 'block' : 'none';
+      document.getElementById('result').innerHTML = '';
+    }
+
+    // Main handler
+    function calculateDoF() {
+      const type = document.getElementById('calcType').value;
+      if (type === 'viewing') calculateViewing();
+      else calculatePhotosite();
+    }
+
+    // Map of f-number formulas
+    const fNumberMap = {
+      'f/1.4': Math.sqrt(Math.pow(2,1)),
+      'f/1.6': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(1/3)/2),
+      'f/1.7': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(1/2)/2),
+      'f/1.8': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(2/3)/2),
+      'f/2.0': Math.sqrt(Math.pow(2,2)),
+      'f/2.2': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(1/3)/2),
+      'f/2.4': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(1/2)/2),
+      'f/2.5': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(2/3)/2),
+      'f/2.8': Math.sqrt(Math.pow(2,3)),
+      'f/3.2': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(1/3)/2),
+      'f/3.3': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(1/2)/2),
+      'f/3.5': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(2/3)/2),
+      'f/4.0': Math.sqrt(Math.pow(2,4)),
+      'f/4.5': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(1/3)/2),
+      'f/4.8': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(1/2)/2),
+      'f/5.0': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(2/3)/2),
+      'f/5.6': Math.sqrt(Math.pow(2,5)),
+      'f/6.3': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(1/3)/2),
+      'f/6.7': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(1/2)/2),
+      'f/7.1': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(2/3)/2),
+      'f/8.0': Math.sqrt(Math.pow(2,6)),
+      'f/9.0': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(1/3)/2),
+      'f/9.5': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(1/2)/2),
+      'f/10': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(2/3)/2),
+      'f/11': Math.sqrt(Math.pow(2,7)),
+      'f/13': Math.sqrt(Math.pow(2,7)) * Math.pow(2,(1/3)/2),
+      'f/13.5': Math.sqrt(Math.pow(2,7)) * Math.pow(2,(1/2)/2),
+      'f/14': Math.sqrt(Math.pow(2,7)) * Math.pow(2,(2/3)/2),
+      'f/16': Math.sqrt(Math.pow(2,8)),
+      'f/18': Math.sqrt(Math.pow(2,8)) * Math.pow(2,(1/3)/2),
+      'f/19': Math.sqrt(Math.pow(2,8)) * Math.pow(2,(1/2)/2),
+      'f/20': Math.sqrt(Math.pow(2,8)) * Math.pow(2,(2/3)/2),
+      'f/22': Math.sqrt(Math.pow(2,9))
+    };
+
+    // Retrieve numeric f-number
+    function getFNumber(id) {
+      const select = document.getElementById(id);
+      const val = select.value;
+      if (val === 'Custom') {
+        const custom = parseFloat(document.getElementById(id + (id.endsWith('P') ? 'Custom' : 'Custom')).value);
+        if (isNaN(custom)) { alert('Please enter a custom f-number'); throw 'Invalid f-number'; }
+        return custom;
       }
+      return fNumberMap[val];
+    }
 
-      // Convert focusing distance from meters to mm
-      var focusingDistance = focusingDistanceMeters * 1000;
+    // Viewing calculation
+    function calculateViewing() {
+      const sw = parseFloat(document.getElementById('sensorWidth').value);
+      const sh = parseFloat(document.getElementById('sensorHeight').value);
+      const fd = parseFloat(document.getElementById('focusDistance').value) * 1000;
+      const fNum = getFNumber('fRatio');
+      const fl = parseFloat(document.getElementById('focalLength').value);
+      if ([sw,sh,fd,fNum,fl].some(isNaN)) { alert('Please fill all fields.'); return; }
 
-      var sensorDiagonal = Math.sqrt(Math.pow(sensorWidth, 2) + Math.pow(sensorHeight, 2));
-      var CoC = sensorDiagonal / 1500;
+      const sensorDiag = Math.sqrt(sw*sw + sh*sh);
+      const coc = sensorDiag / 1500;
+      const hyper = fl + (fl*fl)/(fNum * coc);
+      const far = (hyper * fd) / (hyper - (fd - fl));
+      const near = (hyper * fd) / (hyper + (fd - fl));
+      const total = far - near;
+      const hypernear = hyper / 2;
 
-      var H = focalLength + (Math.pow(focalLength, 2)) / (aperture * CoC);
+      document.getElementById('result').innerHTML = `<h2>Results</h2>
+        <p><strong>DoF Total:</strong> ${mmToM(total).toFixed(2)} m (${total.toFixed(2)} mm)</p>
+        <p><strong>Far Limit:</strong> ${mmToM(far).toFixed(2)} m (${far.toFixed(2)} mm)</p>
+        <p><strong>Near Limit:</strong> ${mmToM(near).toFixed(2)} m (${near.toFixed(2)} mm)</p>
+        <hr>
+        <p><strong>Hyperfocal Distance:</strong> ${mmToM(hyper).toFixed(2)} m (${hyper.toFixed(2)} mm)</p>
+        <p><strong>Hyperfocal Distance Near Limit:</strong> ${mmToM(hypernear).toFixed(2)} m (${hypernear.toFixed(2)} mm)</p>
+        <hr>
+        <p><strong>Circle of Confusion:</strong> ${(coc*1000).toFixed(3)} μm</p>
+        <p><strong>Sensor Diagonal:</strong> ${(sensorDiag).toFixed(3)} mm</p>`;
+    }
 
-      var dofFarMM;
-      if (focusingDistance >= H) {
-        dofFarMM = Infinity;
-      } else {
-        dofFarMM = (H * focusingDistance) / (H - (focusingDistance - focalLength));
-      }
+    // Photosite calculation
+    function calculatePhotosite() {
+      const sw = parseFloat(document.getElementById('sensorWidthP').value);
+      const ps = parseFloat(document.getElementById('photositeCount').value);
+      const fd = parseFloat(document.getElementById('focusDistanceP').value) * 1000;
+      const fNum = getFNumber('fRatioP');
+      const fl = parseFloat(document.getElementById('focalLengthP').value);
+      const df = parseFloat(document.getElementById('diffFactor').value);
+      const wl = parseFloat(document.getElementById('wavelength').value) / 1000;
+      if ([sw,ps,fd,fNum,fl,df,wl].some(isNaN)) { alert('Please fill all fields.'); return; }
 
-      var dofNearMM = (H * focusingDistance) / (H + (focusingDistance - focalLength));
-      var dofMM = dofFarMM === Infinity ? Infinity : dofFarMM - dofNearMM;
+      const pitch = (sw/ps)*1000;
+      const diflimit = pitch * df;
+      const coc = diflimit/1000;
+      const airy = 2.44 * wl * fNum;
+      const hyper = fl + (fl*fl)/(fNum*coc);
+      const far = (hyper * fd) / (hyper - (fd - fl));
+      const near = (hyper * fd) / (hyper + (fd - fl));
+      const total = far - near;
+      const hypernear = hyper / 2;
+      const sweetspotmin = pitch / (2.44 * wl);
+      const sweetspotmax = (pitch*2) / (2.44 * wl);
 
-      var resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "<h2>Results</h2>" +
-        "<p><strong>Depth of Field:</strong> " + (dofMM === Infinity ? "Infinity ♾️" : (dofMM / 1000).toFixed(2) + " m (" + dofMM.toFixed(2) + " mm)</p>") +
-        "<p><strong>Depth of Field Near Limit:</strong> " + (dofNearMM / 1000).toFixed(2) + " m (" + dofNearMM.toFixed(2) + " mm)</p>" +
-        "<p><strong>Depth of Field Far Limit:</strong> " + (dofFarMM === Infinity ? "Infinity ♾️" : (dofFarMM / 1000).toFixed(2) + " m (" + dofFarMM.toFixed(2) + " mm)") + "</p>" +
-        "<hr>" +
-        "<p><strong>Hyperfocal Distance:</strong> " + (H / 1000).toFixed(2) + " m (" + H.toFixed(2) + " mm)</p>" +
-        "<p><strong>Circle of Confusion:</strong> " + CoC.toFixed(4) + " mm</p>" +
-        "<p><strong>Sensor Diagonal:</strong> " + sensorDiagonal.toFixed(2) + " mm</p>";
+      document.getElementById('result').innerHTML = `<h2>Results</h2>
+        <p><strong>DoF Total:</strong> ${mmToM(total).toFixed(2)} m (${total.toFixed(2)} mm)</p>
+        <p><strong>Far Limit:</strong> ${mmToM(far).toFixed(2)} m (${far.toFixed(2)} mm)</p>
+        <p><strong>Near Limit:</strong> ${mmToM(near).toFixed(2)} m (${near.toFixed(2)} mm)</p>
+        <hr>
+        <p><strong>Hyperfocal Distance:</strong> ${mmToM(hyper).toFixed(2)} m (${hyper.toFixed(2)} mm)</p>
+        <p><strong>Hyperfocal Distance Near Limit:</strong> ${mmToM(hypernear).toFixed(2)} m (${hypernear.toFixed(2)} mm)</p>
+        <hr>
+        <p><strong>Circle of Confusion:</strong> ${(coc*1000).toFixed(3)} μm</p>
+        <p><strong>Photosite Pitch:</strong> ${pitch.toFixed(3)} μm</p>
+        <hr>
+        <p><strong>Diffraction Ratio:</strong> ${(airy/pitch).toFixed(2)}x</p>
+        <p><strong>Diffraction Limit:</strong> f/${(diflimit/(2.44*wl)).toFixed(1)}</p>
+        <p><strong>Ideal f-stop Range:</strong> f/${(sweetspotmin).toFixed(2)} to f/${(sweetspotmax).toFixed(2)}</p>`;
     }
   </script>
 </body>
