@@ -57,6 +57,14 @@
       font-size: 14px;
       color: #777;
     }
+    /* Flex row for distances */
+    .distance-row {
+      display: flex;
+      gap: 10px;
+    }
+    .distance-row > div {
+      flex: 1;
+    }
   </style>
 </head>
 <body onload="updateFields()">
@@ -96,14 +104,16 @@
         <input type="number" id="distance" placeholder="e.g. 10" step="any">
       </div>
 
-      <div id="distance1Input">
-        <label for="distance1">Distance 1 (m):</label>
-        <input type="number" id="distance1" placeholder="e.g. 5" step="any">
-      </div>
-
-      <div id="distance2Input">
-        <label for="distance2">Distance 2 (m):</label>
-        <input type="number" id="distance2" placeholder="e.g. 15" step="any">
+      <!-- Distances side by side -->
+      <div id="distanceRow" class="distance-row" style="display:none;">
+        <div id="distance1Input">
+          <label for="distance1">Distance 1 (m):</label>
+          <input type="number" id="distance1" placeholder="e.g. 5" step="any">
+        </div>
+        <div id="distance2Input">
+          <label for="distance2">Distance 2 (m):</label>
+          <input type="number" id="distance2" placeholder="e.g. 15" step="any">
+        </div>
       </div>
 
       <div id="beamAngleInput">
@@ -130,7 +140,7 @@
     function updateFields() {
       const type = document.getElementById("calcType").value;
       // Hide all inputs initially
-      ["fallOffModeContainer","intensityInput","fstopInput","distanceInput","distance1Input","distance2Input","beamAngleInput","beamDiameterInput"]
+      ["fallOffModeContainer","intensityInput","fstopInput","distanceInput","distanceRow","beamAngleInput","beamDiameterInput"]
         .forEach(id => document.getElementById(id).style.display = "none");
 
       if (type === "fallOff") {
@@ -141,8 +151,7 @@
         } else {
           document.getElementById("fstopInput").style.display = "block";
         }
-        document.getElementById("distance1Input").style.display = "block";
-        document.getElementById("distance2Input").style.display = "block";
+        document.getElementById("distanceRow").style.display = "flex";
       } else if (type === "diameter") {
         document.getElementById("beamAngleInput").style.display = "block";
         document.getElementById("distanceInput").style.display = "block";
@@ -198,7 +207,7 @@
           const d = getValue("distance", "distance");
           const diameter = 2 * d * Math.tan(angle * Math.PI / 180 / 2);
           resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Beam Diameter:</strong> ${diameter.toFixed(4)}</p>`;
+            <p><strong>Beam Diameter:</strong> ${diameter.toFixed(3)} m</p>`;
 
         } else if (type === "angle") {
           const diameter = getValue("beamDiameter", "beam diameter");
@@ -206,7 +215,7 @@
           if (d === 0) showError("Distance must be non‑zero.");
           const angle = 2 * Math.atan(diameter / (2 * d)) * 180 / Math.PI;
           resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Beam Angle:</strong> ${angle.toFixed(4)}°</p>`;
+            <p><strong>Beam Angle:</strong> ${angle.toFixed(2)}°</p>`;
 
         } else if (type === "distance") {
           const diameter = getValue("beamDiameter", "beam diameter");
@@ -215,7 +224,7 @@
           if (Math.tan(rad) === 0) showError("Beam angle too small.");
           const distance = diameter / (2 * Math.tan(rad));
           resultDiv.innerHTML = `<h2>Results</h2>
-            <p><strong>Distance:</strong> ${distance.toFixed(4)}</p>`;
+            <p><strong>Distance:</strong> ${distance.toFixed(3)} m</p>`;
         }
       } catch (e) {
         // error already alerted
