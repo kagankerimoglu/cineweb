@@ -57,6 +57,10 @@
       font-size: 14px;
       color: #777;
     }
+    .custom-input {
+      display: none;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body onload="updateFields()">
@@ -69,14 +73,86 @@
         <option value="fstopFromExposure">F-Stop from Exposure Difference</option>
       </select>
 
-      <!-- Common Input -->
-      <label for="fstopSource">F-Stop Source:</label>
-      <input type="number" id="fstopSource" placeholder="e.g. 4" step="any">
+      <!-- F-Stop Source Dropdown -->
+      <label for="fstopSourceSelect">F-Stop Source:</label>
+      <select id="fstopSourceSelect" onchange="toggleCustom('source')">
+        <option value="f/1.4">f/1.4</option>
+        <option value="f/1.6">f/1.6</option>
+        <option value="f/1.7">f/1.7</option>
+        <option value="f/1.8">f/1.8</option>
+        <option value="f/2.0">f/2.0</option>
+        <option value="f/2.2">f/2.2</option>
+        <option value="f/2.4">f/2.4</option>
+        <option value="f/2.5">f/2.5</option>
+        <option value="f/2.8">f/2.8</option>
+        <option value="f/3.2">f/3.2</option>
+        <option value="f/3.3">f/3.3</option>
+        <option value="f/3.5">f/3.5</option>
+        <option value="f/4.0">f/4.0</option>
+        <option value="f/4.5">f/4.5</option>
+        <option value="f/4.8">f/4.8</option>
+        <option value="f/5.0">f/5.0</option>
+        <option value="f/5.6">f/5.6</option>
+        <option value="f/6.3">f/6.3</option>
+        <option value="f/6.7">f/6.7</option>
+        <option value="f/7.1">f/7.1</option>
+        <option value="f/8.0">f/8.0</option>
+        <option value="f/9.0">f/9.0</option>
+        <option value="f/9.5">f/9.5</option>
+        <option value="f/10">f/10</option>
+        <option value="f/11">f/11</option>
+        <option value="f/13">f/13</option>
+        <option value="f/13.5">f/13.5</option>
+        <option value="f/14">f/14</option>
+        <option value="f/16">f/16</option>
+        <option value="f/18">f/18</option>
+        <option value="f/19">f/19</option>
+        <option value="f/20">f/20</option>
+        <option value="f/22">f/22</option>
+        <option value="Custom">Custom</option>
+      </select>
+      <input type="number" id="fstopSourceCustom" class="custom-input" placeholder="Enter custom f-stop" step="any">
 
       <!-- Conditional Input for ΔE± Between F-Stops Calculation -->
       <div id="exposureBetweenFStopsInput">
-        <label for="fstopDestination">F-Stop Destination:</label>
-        <input type="number" id="fstopDestination" placeholder="e.g. 2.8" step="any">
+        <label for="fstopDestinationSelect">F-Stop Destination:</label>
+        <select id="fstopDestinationSelect" onchange="toggleCustom('destination')">
+          <option value="f/1.4">f/1.4</option>
+          <option value="f/1.6">f/1.6</option>
+          <option value="f/1.7">f/1.7</option>
+          <option value="f/1.8">f/1.8</option>
+          <option value="f/2.0">f/2.0</option>
+          <option value="f/2.2">f/2.2</option>
+          <option value="f/2.4">f/2.4</option>
+          <option value="f/2.5">f/2.5</option>
+          <option value="f/2.8">f/2.8</option>
+          <option value="f/3.2">f/3.2</option>
+          <option value="f/3.3">f/3.3</option>
+          <option value="f/3.5">f/3.5</option>
+          <option value="f/4.0">f/4.0</option>
+          <option value="f/4.5">f/4.5</option>
+          <option value="f/4.8">f/4.8</option>
+          <option value="f/5.0">f/5.0</option>
+          <option value="f/5.6">f/5.6</option>
+          <option value="f/6.3">f/6.3</option>
+          <option value="f/6.7">f/6.7</option>
+          <option value="f/7.1">f/7.1</option>
+          <option value="f/8.0">f/8.0</option>
+          <option value="f/9.0">f/9.0</option>
+          <option value="f/9.5">f/9.5</option>
+          <option value="f/10">f/10</option>
+          <option value="f/11">f/11</option>
+          <option value="f/13">f/13</option>
+          <option value="f/13.5">f/13.5</option>
+          <option value="f/14">f/14</option>
+          <option value="f/16">f/16</option>
+          <option value="f/18">f/18</option>
+          <option value="f/19">f/19</option>
+          <option value="f/20">f/20</option>
+          <option value="f/22">f/22</option>
+          <option value="Custom">Custom</option>
+        </select>
+        <input type="number" id="fstopDestinationCustom" class="custom-input" placeholder="Enter custom f-stop" step="any">
       </div>
       
       <!-- Conditional Input for F-Stop from ΔE± Calculation -->
@@ -96,54 +172,103 @@
   </div>
 
   <script>
-    // Update which inputs are shown based on the selected calculation type.
-    function updateFields() {
-      var calcType = document.getElementById("calcType").value;
-      if (calcType === "exposureBetweenFStops") {
-        document.getElementById("exposureBetweenFStopsInput").style.display = "block";
-        document.getElementById("fstopFromExposureInput").style.display = "none";
-      } else if (calcType === "fstopFromExposure") {
-        document.getElementById("exposureBetweenFStopsInput").style.display = "none";
-        document.getElementById("fstopFromExposureInput").style.display = "block";
+    // Predefined f-stop values based on standard full and third-stop progression
+    const fstopValues = {
+      'f/1.4': Math.sqrt(Math.pow(2,1)),
+      'f/1.6': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(1/3)/2),
+      'f/1.7': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(1/2)/2),
+      'f/1.8': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(2/3)/2),
+      'f/2.0': Math.sqrt(Math.pow(2,2)),
+      'f/2.2': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(1/3)/2),
+      'f/2.4': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(1/2)/2),
+      'f/2.5': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(2/3)/2),
+      'f/2.8': Math.sqrt(Math.pow(2,3)),
+      'f/3.2': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(1/3)/2),
+      'f/3.3': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(1/2)/2),
+      'f/3.5': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(2/3)/2),
+      'f/4.0': Math.sqrt(Math.pow(2,4)),
+      'f/4.5': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(1/3)/2),
+      'f/4.8': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(1/2)/2),
+      'f/5.0': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(2/3)/2),
+      'f/5.6': Math.sqrt(Math.pow(2,5)),
+      'f/6.3': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(1/3)/2),
+      'f/6.7': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(1/2)/2),
+      'f/7.1': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(2/3)/2),
+      'f/8.0': Math.sqrt(Math.pow(2,6)),
+      'f/9.0': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(1/3)/2),
+      'f/9.5': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(1/2)/2),
+      'f/10':  Math.sqrt(Math.pow(2,6)) * Math.pow(2,(2/3)/2),
+      'f/11':  Math.sqrt(Math.pow(2,7)),
+      'f/13':  Math.sqrt(Math.pow(2,7)) * Math.pow(2,(1/3)/2),
+      'f/13.5':Math.sqrt(Math.pow(2,7)) * Math.pow(2,(1/2)/2),
+      'f/14':  Math.sqrt(Math.pow(2,7)) * Math.pow(2,(2/3)/2),
+      'f/16':  Math.sqrt(Math.pow(2,8)),
+      'f/18':  Math.sqrt(Math.pow(2,8)) * Math.pow(2,(1/3)/2),
+      'f/19':  Math.sqrt(Math.pow(2,8)) * Math.pow(2,(1/2)/2),
+      'f/20':  Math.sqrt(Math.pow(2,8)) * Math.pow(2,(2/3)/2),
+      'f/22':  Math.sqrt(Math.pow(2,9))
+    };
+
+    function toggleCustom(type) {
+      var select = document.getElementById(type === 'source' ? 'fstopSourceSelect' : 'fstopDestinationSelect');
+      var custom = document.getElementById(type === 'source' ? 'fstopSourceCustom' : 'fstopDestinationCustom');
+      if (select && custom) {
+        custom.style.display = select.value === 'Custom' ? 'block' : 'none';
       }
     }
-    
-    // Performs the exposure calculations based on the selected type.
+
+    function updateFields() {
+      var calcType = document.getElementById("calcType").value;
+      var between = document.getElementById("exposureBetweenFStopsInput");
+      var fromExp = document.getElementById("fstopFromExposureInput");
+      if (calcType === "exposureBetweenFStops") {
+        between.style.display = "block";
+        fromExp.style.display = "none";
+      } else {
+        between.style.display = "none";
+        fromExp.style.display = "block";
+      }
+      toggleCustom('source');
+      toggleCustom('destination');
+    }
+
     function calculateExposure() {
       var calcType = document.getElementById("calcType").value;
       var resultDiv = document.getElementById("result");
-      var fstopSource = parseFloat(document.getElementById("fstopSource").value);
-      
+      var srcSel = document.getElementById("fstopSourceSelect").value;
+      var fstopSource = srcSel === 'Custom'
+        ? parseFloat(document.getElementById("fstopSourceCustom").value)
+        : fstopValues[srcSel];
       if (isNaN(fstopSource) || fstopSource <= 0) {
         alert("Please enter a valid F-Stop Source.");
         return;
       }
-      
       var result;
       if (calcType === "exposureBetweenFStops") {
-        var fstopDestination = parseFloat(document.getElementById("fstopDestination").value);
+        var destSel = document.getElementById("fstopDestinationSelect").value;
+        var fstopDestination = destSel === 'Custom'
+          ? parseFloat(document.getElementById("fstopDestinationCustom").value)
+          : fstopValues[destSel];
         if (isNaN(fstopDestination) || fstopDestination <= 0) {
           alert("Please enter a valid F-Stop Destination.");
           return;
         }
-        // Calculate ΔE± = 2 * log(fstopSource / fstopDestination) / log(2)
         result = 2 * Math.log(fstopSource / fstopDestination) / Math.log(2);
-        resultDiv.innerHTML = "<h2>Results</h2>" +
-          "<p><strong>Exposure Difference (ΔE±):</strong> " + result.toFixed(2) + "</p>" +
-          "<p><strong>F-Stop Source:</strong> " + fstopSource.toFixed(2) + "</p>" +
-          "<p><strong>F-Stop Destination:</strong> " + fstopDestination.toFixed(2) + "</p>";
-      } else if (calcType === "fstopFromExposure") {
+        resultDiv.innerHTML = `<h2>Results</h2>
+          <p><strong>Exposure Difference (ΔE±):</strong> ${result.toFixed(2)}</p>
+          <p><strong>F-Stop Source:</strong> ${fstopSource.toFixed(2)}</p>
+          <p><strong>F-Stop Destination:</strong> ${fstopDestination.toFixed(2)}</p>`;
+      } else {
         var exposureDifference = parseFloat(document.getElementById("exposureDifference").value);
         if (isNaN(exposureDifference)) {
           alert("Please enter a valid Exposure Difference (ΔE±).");
           return;
         }
-        // Calculate F-Stop Destination = fstopSource / (2^(exposureDifference/2))
         result = fstopSource / Math.pow(2, exposureDifference / 2);
-        resultDiv.innerHTML = "<h2>Results</h2>" +
-          "<p><strong>F-Stop Destination:</strong> " + result.toFixed(2) + "</p>" +
-          "<p><strong>F-Stop Source:</strong> " + fstopSource.toFixed(2) + "</p>" +
-          "<p><strong>Exposure Difference (ΔE±):</strong> " + exposureDifference.toFixed(2) + "</p>";
+        resultDiv.innerHTML = `<h2>Results</h2>
+          <p><strong>F-Stop Destination:</strong> ${result.toFixed(2)}</p>
+          <p><strong>F-Stop Source:</strong> ${fstopSource.toFixed(2)}</p>
+          <p><strong>Exposure Difference (ΔE±):</strong> ${exposureDifference.toFixed(2)}</p>`;
       }
     }
   </script>
