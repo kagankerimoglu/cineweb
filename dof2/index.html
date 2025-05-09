@@ -14,7 +14,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 60vh;
+      min-height: 90vh;
     }
     .container {
       max-width: 600px;
@@ -77,7 +77,7 @@
       <div id="viewingInputs">
         <div class="row">
           <div>
-            <label for="fRatio">Focal Ratio:</label>
+            <label for="fRatio">Focal Ratio</label>
             <select id="fRatio" onchange="onFNumberChange('fRatio'); updateDisplays('fRatio');">
               <option>f/1.0</option>
               <option>f/1.4</option>
@@ -95,7 +95,7 @@
             <input type="number" id="fRatioCustom" step="any" placeholder="Custom f-number" style="display:none;" oninput="updateDisplays('fRatio')">
           </div>
           <div>
-            <label for="fRatioStep">Increment:</label>
+            <label for="fRatioStep">Increment</label>
             <select id="fRatioStep" onchange="updateDisplays('fRatio')">
               <option value="0">+0</option>
               <option value="1/3">+1/3</option>
@@ -104,27 +104,27 @@
             </select>
           </div>
           <div>
-            <label for="fRatioEffective">Effective:</label>
+            <label for="fRatioEffective">Effective</label>
             <input type="text" id="fRatioEffective" readonly placeholder="f/4.00">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="focalLength">Focal Length (mm):</label>
+            <label for="focalLength">Focal Length (mm)</label>
             <input type="number" id="focalLength" step="any" placeholder="e.g. 50">
           </div>
           <div>
-            <label for="focusDistance">Focusing Distance (m):</label>
+            <label for="focusDistance">Focusing Distance (m)</label>
             <input type="number" id="focusDistance" step="any" placeholder="e.g. 5">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="sensorWidth">Sensor Width (mm):</label>
+            <label for="sensorWidth">Sensor Width (mm)</label>
             <input type="number" id="sensorWidth" step="any" placeholder="e.g. 36">
           </div>
           <div>
-            <label for="sensorHeight">Sensor Height (mm):</label>
+            <label for="sensorHeight">Sensor Height (mm)</label>
             <input type="number" id="sensorHeight" step="any" placeholder="e.g. 24">
           </div>
         </div>
@@ -133,7 +133,7 @@
       <div id="photositeInputs" style="display:none;">
         <div class="row">
           <div>
-            <label for="fRatioP">Focal Ratio:</label>
+            <label for="fRatioP">Focal Ratio</label>
             <select id="fRatioP" onchange="onFNumberChange('fRatioP'); updateDisplays('fRatioP');">
               <option>f/1.0</option>
               <option>f/1.4</option>
@@ -151,7 +151,7 @@
             <input type="number" id="fRatioPCustom" step="any" placeholder="Custom f-number" style="display:none;" oninput="updateDisplays('fRatioP')">
           </div>
           <div>
-            <label for="fRatioPStep">Increment:</label>
+            <label for="fRatioPStep">Increment</label>
             <select id="fRatioPStep" onchange="updateDisplays('fRatioP')">
               <option value="0">+0</option>
               <option value="1/3">+1/3</option>
@@ -160,37 +160,37 @@
             </select>
           </div>
           <div>
-            <label for="fRatioPEffective">Effective:</label>
+            <label for="fRatioPEffective">Effective</label>
             <input type="text" id="fRatioPEffective" readonly placeholder="f/4.00">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="focalLengthP">Focal Length (mm):</label>
+            <label for="focalLengthP">Focal Length (mm)</label>
             <input type="number" id="focalLengthP" step="any" placeholder="e.g. 50">
           </div>
           <div>
-            <label for="focusDistanceP">Focusing Distance (m):</label>
+            <label for="focusDistanceP">Focusing Distance (m)</label>
             <input type="number" id="focusDistanceP" step="any" placeholder="e.g. 5">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="sensorWidthP">Sensor Width (mm):</label>
+            <label for="sensorWidthP">Sensor Width (mm)</label>
             <input type="number" id="sensorWidthP" step="any" placeholder="e.g. 36">
           </div>
           <div>
-            <label for="photositeCount">Photosite Width (pixels):</label>
+            <label for="photositeCount">Photosite Width (pixels)</label>
             <input type="number" id="photositeCount" step="any" placeholder="e.g. 6000">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="diffFactor">Diffraction Factor:</label>
+            <label for="diffFactor">Diffraction Factor</label>
             <input type="number" id="diffFactor" value="2.5" step="any" placeholder="e.g. 2.5">
           </div>
           <div>
-            <label for="wavelength">Wavelength (nm):</label>
+            <label for="wavelength">Wavelength (nm)</label>
             <input type="number" id="wavelength" value="550" step="any" placeholder="e.g. 550">
           </div>
         </div>
