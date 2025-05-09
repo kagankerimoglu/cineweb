@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -32,12 +32,15 @@
       margin-top: 15px;
       font-weight: bold;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
       box-sizing: border-box;
       font-size: 16px;
+    }
+    #customFocalRatio {
+      display: none;
     }
     button {
       margin-top: 20px;
@@ -62,56 +65,157 @@
 <body>
   <div class="container">
     <h1>Diffraction Calculator</h1>
-    <form onsubmit="event.preventDefault(); calculateDOF();">
+    <form onsubmit="event.preventDefault(); calculateDiffraction();">
+      <!-- Focal Ratio selector -->
+      <label for="focalRatio">Focal Ratio:</label>
+      <select id="focalRatio">
+        <option>f/1.4</option>
+        <option>f/1.6</option>
+        <option>f/1.8</option>
+        <option>f/2.0</option>
+        <option>f/2.2</option>
+        <option>f/2.5</option>
+        <option>f/2.8</option>
+        <option>f/3.2</option>
+        <option>f/3.5</option>
+        <option>f/4.0</option>
+        <option>f/4.5</option>
+        <option>f/5.0</option>
+        <option>f/5.6</option>
+        <option>f/6.3</option>
+        <option>f/7.1</option>
+        <option selected>f/8.0</option>
+        <option>f/9.0</option>
+        <option>f/10</option>
+        <option>f/11</option>
+        <option>f/13</option>
+        <option>f/14</option>
+        <option>f/16</option>
+        <option>f/18</option>
+        <option>f/20</option>
+        <option>f/22</option>
+        <option>Custom</option>
+      </select>
+      <input type="number" id="customFocalRatio" placeholder="e.g. 2.4">
+
       <label for="sensorWidth">Sensor Width (mm):</label>
       <input type="number" id="sensorWidth" placeholder="e.g. 36" step="any">
-      
-      <label for="photositeWidth">Horizontal Pixel:</label>
+
+      <label for="photositeWidth">Photosite Width (pixels):</label>
       <input type="number" id="photositeWidth" placeholder="e.g. 4096" step="any">
-      
-      <label for="aperture">Aperture:</label>
-      <input type="number" id="aperture" placeholder="e.g. 4" step="any">
-      
+
+      <label for="wavelength">Wavelength (nm):</label>
+      <input type="number" id="wavelength" value="550" placeholder="550" step="any">
+
       <button type="submit">Calculate</button>
     </form>
-    
+
     <div class="result" id="result"></div>
   </div>
 
   <div class="footer">
-  Version 1.0<br>(C) 2025 Kagan Kerimoglu
+    Version 1.0<br>(C) 2025 Kağan Kerimoğlu
   </div>
-  
+
   <script>
-    function calculateDOF() {
-      var sensorWidth = parseFloat(document.getElementById("sensorWidth").value);
-      var photositeWidth = parseFloat(document.getElementById("photositeWidth").value);
-      var aperture = parseFloat(document.getElementById("aperture").value);
-      
-      if (isNaN(sensorWidth) || isNaN(photositeWidth) || isNaN(aperture)) {
-        alert("Please fill in all fields with valid numbers.");
+    // mapping each preset to (N,k) for f-number = 2**((N + k/3)/2)
+    const focalSeries = {
+      "f/1.4": {N:1, k:0},
+      "f/1.6": {N:1, k:1},
+      "f/1.8": {N:1, k:2},
+      "f/2.0": {N:2, k:0},
+      "f/2.2": {N:2, k:1},
+      "f/2.5": {N:2, k:2},
+      "f/2.8": {N:3, k:0},
+      "f/3.2": {N:3, k:1},
+      "f/3.5": {N:3, k:2},
+      "f/4.0": {N:4, k:0},
+      "f/4.5": {N:4, k:1},
+      "f/5.0": {N:4, k:2},
+      "f/5.6": {N:5, k:0},
+      "f/6.3": {N:5, k:1},
+      "f/7.1": {N:5, k:2},
+      "f/8.0": {N:6, k:0},
+      "f/9.0": {N:6, k:1},
+      "f/10": {N:6, k:2},
+      "f/11": {N:7, k:0},
+      "f/13": {N:7, k:1},
+      "f/14": {N:7, k:2},
+      "f/16": {N:8, k:0},
+      "f/18": {N:8, k:1},
+      "f/20": {N:8, k:2},
+      "f/22": {N:9, k:0}
+    };
+
+    document.getElementById("focalRatio")
+      .addEventListener("change", function() {
+        const custom = document.getElementById("customFocalRatio");
+        custom.style.display = this.value === "Custom" ? "block" : "none";
+      });
+
+    function calculateDiffraction() {
+      // inputs
+      const sensorWidth    = parseFloat(document.getElementById("sensorWidth").value);
+      const photositeWidth = parseFloat(document.getElementById("photositeWidth").value);
+      let   wavelength     = parseFloat(document.getElementById("wavelength").value);
+
+      if (isNaN(sensorWidth) || isNaN(photositeWidth)) {
+        alert("Please fill in sensor width and photosite width.");
         return;
       }
+      // apply defaults if user clears the fields
+      if (isNaN(wavelength)) wavelength = 550;
 
-      var airydiskDiameter = 2.44 * (550/1000) * aperture;
+      // focal ratio
+      let frVal;
+      const sel = document.getElementById("focalRatio").value;
+      if (sel === "Custom") {
+        frVal = parseFloat(document.getElementById("customFocalRatio").value);
+        if (isNaN(frVal)) {
+          alert("Please enter a valid custom f-number.");
+          return;
+        }
+      } else {
+        const spec = focalSeries[sel];
+        frVal = Math.pow(2, (spec.N + spec.k/3) / 2);
+      }
 
-      var photositePitch = (sensorWidth / photositeWidth) * 1000;
-      
-      var diffractionLimitation = photositePitch * 2.5;
-      
-      var diffractionLimitedFStop = diffractionLimitation / (2.44 * (550/1000));
+      diffFactor = 2.5;
+      // conversions & core formulas
+      const λμ = wavelength / 1000;     // nm → μm
+      const photositePitch = (sensorWidth / photositeWidth) * 1000; // mm/mm → μm
+      const airydisk        = 2.44 * λμ * frVal;
+      const diflimit        = photositePitch * diffFactor;
+      const limitedStop     = diflimit / (2.44 * λμ);
+      const diffractionRatio = airydisk / photositePitch;
 
-      var isDiffractionLimited = diffractionLimitation <= airydiskDiameter;
+      // sweet spot
+      const sweetMin = photositePitch / (2.44 * λμ);
+      const sweetMax = (photositePitch * 2) / (2.44 * λμ);
 
+      // status
+      let symbol, status;
+      if (diffractionRatio < 2) {
+        symbol = "🟢";
+      } else if (diffractionRatio < 2.5) {
+        symbol = "🟡";
+      } else {
+        symbol = "🔴";
+      }
 
-      var resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "<h2>Results</h2>" +
-        "<p><strong>Diffraction Limited:</strong> " + (isDiffractionLimited ? "Yes" : "No") + "</p>" +
-        "<p><strong>Diffraction Limited F-Stop:</strong> " + diffractionLimitedFStop.toFixed(1) + "</p>" +
+      // render as HTML
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML =
+        "<h2>Results</h2>" +
+        "<p><strong>Diffraction-Limited?</strong> " + symbol + "</p>" +
         "<hr>" +
-        "<p><strong>Pixel Pitch:</strong> " + photositePitch.toFixed(2) + " µm</p>" +
-        "<p><strong>Diffraction Limitation:</strong> " + diffractionLimitation.toFixed(2) + " µm</p>" +
-        "<p><strong>Airy Disk Diameter:</strong> " + airydiskDiameter.toFixed(2) + " µm</p>" ;
+        "<p><strong>Diffraction Limit:</strong> f/" + limitedStop.toFixed(1) + "</p>" +
+        "<p><strong>Ideal f-stop Range:</strong> f/" + sweetMin.toFixed(2) + " – f/" + sweetMax.toFixed(2) + "</p>" +
+        "<p><strong>Diffraction Ratio:</strong> " + diffractionRatio.toFixed(2) + "×</p>" +
+        "<hr>" +
+        "<p><strong>Photosite Pitch:</strong> " + photositePitch.toFixed(2) + " μm</p>" +
+        "<p><strong>Airy Disk Diameter:</strong> " + airydisk.toFixed(2) + " μm</p>" +
+        "<p><strong>Diffraction Limit:</strong> " + diflimit.toFixed(2) + " μm</p>";
     }
   </script>
 </body>
