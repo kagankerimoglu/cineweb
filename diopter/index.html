@@ -14,7 +14,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      min-height: 90vh;
     }
     .container {
       max-width: 600px;
@@ -41,12 +41,12 @@
     }
     button {
       margin-top: 20px;
-      padding: 10px 20px;
+      padding: 5px 10px;
       font-size: 16px;
       cursor: pointer;
     }
     .result {
-      margin-top: 30px;
+      margin-top: 20px;
       padding: 15px;
       background: #e9e9e9;
       border-radius: 4px;
@@ -54,7 +54,7 @@
     .footer {
       margin-top: 20px;
       text-align: center;
-      font-size: 14px;
+      font-size: 15px;
       color: #777;
     }
   </style>
@@ -63,25 +63,25 @@
   <div class="container">
     <h1>Diopter Calculator</h1>
     <form onsubmit="event.preventDefault(); calculateDiopter();">
-      <label for="calcType">Calculation Type:</label>
+      <label for="calcType">Calculation Type</label>
       <select id="calcType" onchange="updateFields()">
         <option value="diopterCloseFocus">Diopter Close Focus</option>
         <option value="diopterStrength">Diopter Strength</option>
       </select>
       
       <!-- Common Input -->
-      <label for="closeFocus">Close Focus (meters):</label>
+      <label for="closeFocus">Close Focus (m)</label>
       <input type="number" id="closeFocus" placeholder="e.g. 0.5" step="any">
       
       <!-- Conditional Input for Diopter Close Focus Calculation -->
       <div id="diopterStrengthInput">
-        <label for="inputDiopterStrength">Diopter Strength:</label>
+        <label for="inputDiopterStrength">Diopter Strength</label>
         <input type="number" id="inputDiopterStrength" placeholder="e.g. 2" step="any">
       </div>
       
       <!-- Conditional Input for Diopter Strength Calculation -->
       <div id="diopterCloseFocusInput">
-        <label for="inputDiopterCloseFocus">Diopter Close Focus:</label>
+        <label for="inputDiopterCloseFocus">Diopter Close Focus</label>
         <input type="number" id="inputDiopterCloseFocus" placeholder="e.g. 0.2" step="any">
       </div>
       
@@ -92,7 +92,7 @@
   </div>
 
   <div class="footer">
-    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+    © Kagan Kerimoglu 2025
   </div>
   
   <script>
@@ -130,9 +130,9 @@
         var diopterInfinity = 1 / diopterStrength;
         
         resultDiv.innerHTML = "<h2>Results</h2>" +
-          "<p><strong>Diopter Close Focus:</strong> " + diopterCloseFocus.toFixed(2) + "</p>" +
-          "<p><strong>Diopter Infinity:</strong> " + diopterInfinity.toFixed(2) + "</p>" +
-          "<p><strong>Diopter Strength:</strong> " + diopterStrength.toFixed(2) + "</p>" ;
+          "<p><strong>Diopter Close Focus:</strong> " + diopterCloseFocus.toFixed(2) + " m</p>" +
+          "<p><strong>Diopter Infinity:</strong> " + diopterInfinity.toFixed(2) + " m</p>" +
+          "<p><strong>Diopter Strength:</strong> " + diopterStrength.toFixed(2) + " m</p>" ;
         
       // Mode 2: Diopter Strength (user inputs diopter close focus)
       } else if (calcType === "diopterStrength") {
@@ -145,9 +145,9 @@
         var diopterInfinity = 1 / diopterStrength;
         
         resultDiv.innerHTML = "<h2>Results</h2>" +
-          "<p><strong>Diopter Strength:</strong> " + diopterStrength.toFixed(2) + "</p>" +
-          "<p><strong>Diopter Infinity:</strong> " + diopterInfinity.toFixed(2) + "</p>" +
-          "<p><strong>Diopter Close Focus:</strong> " + diopterCloseFocus.toFixed(2) + "</p>";
+          "<p><strong>Diopter Strength:</strong> " + diopterStrength.toFixed(2) + " m</p>" +
+          "<p><strong>Diopter Infinity:</strong> " + diopterInfinity.toFixed(2) + " m</p>" +
+          "<p><strong>Diopter Close Focus:</strong> " + diopterCloseFocus.toFixed(2) + " m</p>";
       }
     }
   </script>
