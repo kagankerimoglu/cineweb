@@ -14,7 +14,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      min-height: 90vh;
     }
     .container {
       max-width: 600px;
@@ -24,7 +24,9 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    h1 { text-align: center; }
+    h1 {
+      text-align: center;
+    }
     label {
       display: block;
       margin-top: 15px;
@@ -46,20 +48,20 @@
     }
     button {
       margin-top: 20px;
-      padding: 10px 20px;
+      padding: 5px 10px;
       font-size: 16px;
       cursor: pointer;
     }
     .result {
-      margin-top: 30px;
+      margin-top: 20px;
       padding: 15px;
       background: #e9e9e9;
       border-radius: 4px;
     }
     .footer {
-      margin-top: 20px;
+      margin-top: 15px;
       text-align: center;
-      font-size: 14px;
+      font-size: 15px;
       color: #777;
     }
   </style>
@@ -68,142 +70,133 @@
   <div class="container">
     <h1>Depth of Field Calculator</h1>
     <form onsubmit="event.preventDefault(); calculateDoF();">
-      <label for="calcType">Calculation Type:</label>
+      <label for="calcType">Calculation Type</label>
       <select id="calcType" onchange="toggleInputs();">
         <option value="viewing">Viewing Distance</option>
         <option value="photosite">Photosite Pitch</option>
       </select>
       
       <div id="viewingInputs">
-        <label for="fRatio">Focal Ratio (f-number):</label>
-        <select id="fRatio" onchange="onFNumberChange('fRatio')">
-          <!-- Full and partial stops -->
-          <option>f/1.4</option>
-          <option>f/1.6</option>
-          <option>f/1.7</option>
-          <option>f/1.8</option>
-          <option>f/2.0</option>
-          <option>f/2.2</option>
-          <option>f/2.4</option>
-          <option>f/2.5</option>
-          <option>f/2.8</option>
-          <option>f/3.2</option>
-          <option>f/3.3</option>
-          <option>f/3.5</option>
-          <option selected>f/4.0</option>
-          <option>f/4.5</option>
-          <option>f/4.8</option>
-          <option>f/5.0</option>
-          <option>f/5.6</option>
-          <option>f/6.3</option>
-          <option>f/6.7</option>
-          <option>f/7.1</option>
-          <option>f/8.0</option>
-          <option>f/9.0</option>
-          <option>f/9.5</option>
-          <option>f/10</option>
-          <option>f/11</option>
-          <option>f/13</option>
-          <option>f/13.5</option>
-          <option>f/14</option>
-          <option>f/16</option>
-          <option>f/18</option>
-          <option>f/19</option>
-          <option>f/20</option>
-          <option>f/22</option>
-          <option>Custom</option>
-        </select>
-        <input type="number" id="fRatioCustom" step="any" placeholder="Custom f-number" style="display:none;">
-
         <div class="row">
           <div>
-            <label for="focalLength">Focal Length (mm):</label>
+            <label for="fRatio">Focal Ratio</label>
+            <select id="fRatio" onchange="onFNumberChange('fRatio'); updateDisplays('fRatio');">
+              <option>f/1.0</option>
+              <option>f/1.4</option>
+              <option>f/2.0</option>
+              <option>f/2.8</option>
+              <option>f/4.0</option>
+              <option selected>f/5.6</option>
+              <option>f/8.0</option>
+              <option>f/11</option>
+              <option>f/16</option>
+              <option>f/22</option>
+              <option>f/32</option>
+              <option>Custom</option>
+            </select>
+            <input type="number" id="fRatioCustom" step="any" placeholder="Custom f-number" style="display:none;" oninput="updateDisplays('fRatio')">
+          </div>
+          <div>
+            <label for="fRatioStep">Increment</label>
+            <select id="fRatioStep" onchange="updateDisplays('fRatio')">
+              <option value="0">+0</option>
+              <option value="1/4">+1/4</option>
+              <option value="1/3">+1/3</option>
+              <option value="1/2">+1/2</option>
+              <option value="2/3">+2/3</option>
+              <option value="3/4">+3/4</option>
+            </select>
+          </div>
+          <div>
+            <label for="fRatioEffective">Effective</label>
+            <input type="text" id="fRatioEffective" readonly placeholder="f/4.00">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="focalLength">Focal Length (mm)</label>
             <input type="number" id="focalLength" step="any" placeholder="e.g. 50">
           </div>
           <div>
-            <label for="focusDistance">Focusing Distance (m):</label>
+            <label for="focusDistance">Focusing Distance (m)</label>
             <input type="number" id="focusDistance" step="any" placeholder="e.g. 5">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="sensorWidth">Sensor Width (mm):</label>
+            <label for="sensorWidth">Sensor Width (mm)</label>
             <input type="number" id="sensorWidth" step="any" placeholder="e.g. 36">
           </div>
           <div>
-            <label for="sensorHeight">Sensor Height (mm):</label>
+            <label for="sensorHeight">Sensor Height (mm)</label>
             <input type="number" id="sensorHeight" step="any" placeholder="e.g. 24">
           </div>
         </div>
       </div>
 
       <div id="photositeInputs" style="display:none;">
-        <label for="fRatioP">Focal Ratio (f-number):</label>
-        <select id="fRatioP" onchange="onFNumberChange('fRatioP')">
-          <option>f/1.4</option>
-          <option>f/1.6</option>
-          <option>f/1.7</option>
-          <option>f/1.8</option>
-          <option>f/2.0</option>
-          <option>f/2.2</option>
-          <option>f/2.4</option>
-          <option>f/2.5</option>
-          <option>f/2.8</option>
-          <option>f/3.2</option>
-          <option>f/3.3</option>
-          <option>f/3.5</option>
-          <option selected>f/4.0</option>
-          <option>f/4.5</option>
-          <option>f/4.8</option>
-          <option>f/5.0</option>
-          <option>f/5.6</option>
-          <option>f/6.3</option>
-          <option>f/6.7</option>
-          <option>f/7.1</option>
-          <option>f/8.0</option>
-          <option>f/9.0</option>
-          <option>f/9.5</option>
-          <option>f/10</option>
-          <option>f/11</option>
-          <option>f/13</option>
-          <option>f/13.5</option>
-          <option>f/14</option>
-          <option>f/16</option>
-          <option>f/18</option>
-          <option>f/19</option>
-          <option>f/20</option>
-          <option>f/22</option>
-          <option>Custom</option>
-        </select>
-        <input type="number" id="fRatioPCustom" step="any" placeholder="Custom f-number" style="display:none;">
-
         <div class="row">
           <div>
-            <label for="focalLengthP">Focal Length (mm):</label>
+            <label for="fRatioP">Focal Ratio</label>
+            <select id="fRatioP" onchange="onFNumberChange('fRatioP'); updateDisplays('fRatioP');">
+              <option>f/1.0</option>
+              <option>f/1.4</option>
+              <option>f/2.0</option>
+              <option>f/2.8</option>
+              <option>f/4.0</option>
+              <option selected>f/5.6</option>
+              <option>f/8.0</option>
+              <option>f/11</option>
+              <option>f/16</option>
+              <option>f/22</option>
+              <option>f/32</option>
+              <option>Custom</option>
+            </select>
+            <input type="number" id="fRatioPCustom" step="any" placeholder="Custom f-number" style="display:none;" oninput="updateDisplays('fRatioP')">
+          </div>
+          <div>
+            <label for="fRatioPStep">Increment</label>
+            <select id="fRatioPStep" onchange="updateDisplays('fRatioP')">
+              <option value="0">+0</option>
+              <option value="1/4">+1/4</option>
+              <option value="1/3">+1/3</option>
+              <option value="1/2">+1/2</option>
+              <option value="2/3">+2/3</option>
+              <option value="3/4">+3/4</option>
+            </select>
+          </div>
+          <div>
+            <label for="fRatioPEffective">Effective</label>
+            <input type="text" id="fRatioPEffective" readonly placeholder="f/4.00">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="focalLengthP">Focal Length (mm)</label>
             <input type="number" id="focalLengthP" step="any" placeholder="e.g. 50">
           </div>
           <div>
-            <label for="focusDistanceP">Focusing Distance (m):</label>
+            <label for="focusDistanceP">Focusing Distance (m)</label>
             <input type="number" id="focusDistanceP" step="any" placeholder="e.g. 5">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="sensorWidthP">Sensor Width (mm):</label>
+            <label for="sensorWidthP">Sensor Width (mm)</label>
             <input type="number" id="sensorWidthP" step="any" placeholder="e.g. 36">
           </div>
           <div>
-            <label for="photositeCount">Photosite Width (pixels):</label>
+            <label for="photositeCount">Resolution Width (photosite)</label>
             <input type="number" id="photositeCount" step="any" placeholder="e.g. 6000">
           </div>
         </div>
         <div class="row">
           <div>
-            <label for="diffFactor">Diffraction Factor:</label>
+            <label for="diffFactor">Diffraction Factor</label>
             <input type="number" id="diffFactor" value="2.5" step="any" placeholder="e.g. 2.5">
           </div>
           <div>
-            <label for="wavelength">Wavelength (nm):</label>
+            <label for="wavelength">Wavelength (nm)</label>
             <input type="number" id="wavelength" value="550" step="any" placeholder="e.g. 550">
           </div>
         </div>
@@ -220,7 +213,7 @@
   </div>
 
   <div class="footer">
-    Version 2.0<br>(C) 2025 Kagan Kerimoglu
+    © Kagan Kerimoglu 2025
   </div>
   
   <script>
@@ -230,7 +223,7 @@
     // Show/hide custom f-number input
     function onFNumberChange(id) {
       const select = document.getElementById(id);
-      const custom = document.getElementById(id + (id.endsWith('P') ? 'Custom' : 'Custom'));
+      const custom = document.getElementById(id + 'Custom');
       custom.style.display = select.value === 'Custom' ? 'block' : 'none';
     }
 
@@ -249,61 +242,83 @@
       else calculatePhotosite();
     }
 
-    // Map of f-number formulas
+    // Full-stop f-numbers
     const fNumberMap = {
+      'f/1.0': Math.sqrt(Math.pow(2,0)),
       'f/1.4': Math.sqrt(Math.pow(2,1)),
-      'f/1.6': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(1/3)/2),
-      'f/1.7': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(1/2)/2),
-      'f/1.8': Math.sqrt(Math.pow(2,1)) * Math.pow(2,(2/3)/2),
       'f/2.0': Math.sqrt(Math.pow(2,2)),
-      'f/2.2': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(1/3)/2),
-      'f/2.4': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(1/2)/2),
-      'f/2.5': Math.sqrt(Math.pow(2,2)) * Math.pow(2,(2/3)/2),
       'f/2.8': Math.sqrt(Math.pow(2,3)),
-      'f/3.2': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(1/3)/2),
-      'f/3.3': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(1/2)/2),
-      'f/3.5': Math.sqrt(Math.pow(2,3)) * Math.pow(2,(2/3)/2),
       'f/4.0': Math.sqrt(Math.pow(2,4)),
-      'f/4.5': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(1/3)/2),
-      'f/4.8': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(1/2)/2),
-      'f/5.0': Math.sqrt(Math.pow(2,4)) * Math.pow(2,(2/3)/2),
       'f/5.6': Math.sqrt(Math.pow(2,5)),
-      'f/6.3': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(1/3)/2),
-      'f/6.7': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(1/2)/2),
-      'f/7.1': Math.sqrt(Math.pow(2,5)) * Math.pow(2,(2/3)/2),
       'f/8.0': Math.sqrt(Math.pow(2,6)),
-      'f/9.0': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(1/3)/2),
-      'f/9.5': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(1/2)/2),
-      'f/10': Math.sqrt(Math.pow(2,6)) * Math.pow(2,(2/3)/2),
-      'f/11': Math.sqrt(Math.pow(2,7)),
-      'f/13': Math.sqrt(Math.pow(2,7)) * Math.pow(2,(1/3)/2),
-      'f/13.5': Math.sqrt(Math.pow(2,7)) * Math.pow(2,(1/2)/2),
-      'f/14': Math.sqrt(Math.pow(2,7)) * Math.pow(2,(2/3)/2),
-      'f/16': Math.sqrt(Math.pow(2,8)),
-      'f/18': Math.sqrt(Math.pow(2,8)) * Math.pow(2,(1/3)/2),
-      'f/19': Math.sqrt(Math.pow(2,8)) * Math.pow(2,(1/2)/2),
-      'f/20': Math.sqrt(Math.pow(2,8)) * Math.pow(2,(2/3)/2),
-      'f/22': Math.sqrt(Math.pow(2,9))
+      'f/11':  Math.sqrt(Math.pow(2,7)),
+      'f/16':  Math.sqrt(Math.pow(2,8)),
+      'f/22':  Math.sqrt(Math.pow(2,9)),
+      'f/32':  Math.sqrt(Math.pow(2,10))
     };
 
-    // Retrieve numeric f-number
-    function getFNumber(id) {
-      const select = document.getElementById(id);
-      const val = select.value;
-      if (val === 'Custom') {
-        const custom = parseFloat(document.getElementById(id + (id.endsWith('P') ? 'Custom' : 'Custom')).value);
-        if (isNaN(custom)) { alert('Please enter a custom f-number'); throw 'Invalid f-number'; }
-        return custom;
+    // Stop increments
+    const stepMap = {
+      '0':   1,
+      '1/4': Math.pow(2,(1/4)/2),
+      '1/3': Math.pow(2,(1/3)/2),
+      '1/2': Math.pow(2,(1/2)/2),
+      '2/3': Math.pow(2,(2/3)/2),
+      '3/4': Math.pow(2,(3/4)/2)
+    };
+
+    // Get base f-number (no increment)
+    function getBaseFNumber(id) {
+      const sel = document.getElementById(id);
+      if (sel.value === 'Custom') {
+        const c = parseFloat(document.getElementById(id + 'Custom').value);
+        return isNaN(c) ? null : c;
       }
-      return fNumberMap[val];
+      return fNumberMap[sel.value];
     }
+
+    // Partial multiplier
+    function getStepMultiplier(stepId) {
+      const v = document.getElementById(stepId).value;
+      return stepMap[v];
+    }
+
+    // Compute effective f-number
+    function computeEffective(id) {
+      const base = getBaseFNumber(id);
+      if (!base) return null;
+      const stepId = id === 'fRatio' ? 'fRatioStep' : 'fRatioPStep';
+      return base * getStepMultiplier(stepId);
+    }
+
+    // Update both increment labels and effective display
+    function updateDisplays(id) {
+      // update step labels
+      const base = getBaseFNumber(id);
+      if (base) {
+        const stepSelect = document.getElementById(id === 'fRatio' ? 'fRatioStep' : 'fRatioPStep');
+        Array.from(stepSelect.options).forEach(opt => {
+          const m = stepMap[opt.value];
+          opt.text = `+${opt.value}`;// add (f/${(base*m).toFixed(2)}) to show effective stops inside
+        });
+      }
+      // update effective field
+      const eff = computeEffective(id);
+      const effInput = document.getElementById(id === 'fRatio' ? 'fRatioEffective' : 'fRatioPEffective');
+      effInput.value = eff ? `f/${eff.toFixed(4)}...` : '';
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      ['fRatio','fRatioP'].forEach(id => updateDisplays(id));
+    });
 
     // Viewing calculation
     function calculateViewing() {
       const sw = parseFloat(document.getElementById('sensorWidth').value);
       const sh = parseFloat(document.getElementById('sensorHeight').value);
       const fd = parseFloat(document.getElementById('focusDistance').value) * 1000;
-      const fNum = getFNumber('fRatio');
+      const fNum = computeEffective('fRatio');
       const fl = parseFloat(document.getElementById('focalLength').value);
       if ([sw,sh,fd,fNum,fl].some(isNaN)) { alert('Please fill all fields.'); return; }
 
@@ -313,12 +328,7 @@
       let far = (hyper * fd) / (hyper - (fd - fl));
       let near = (hyper * fd) / (hyper + (fd - fl));
       let total = far - near;
-
-      if (fd >= hyper || (total < 0 && far < 0)) {
-        total = Infinity;
-        far = Infinity;
-      }
-
+      if (fd >= hyper || (total < 0 && far < 0)) { total = Infinity; far = Infinity; }
       const hypernear = hyper / 2;
 
       document.getElementById('result').innerHTML = `<h2>Results</h2>
@@ -330,7 +340,7 @@
         <p><strong>Hyperfocal Distance Near Limit:</strong> ${mmToM(hypernear).toFixed(2)} m (${hypernear.toFixed(2)} mm)</p>
         <hr>
         <p><strong>Circle of Confusion:</strong> ${(coc*1000).toFixed(3)} μm</p>
-        <p><strong>Sensor Diagonal:</strong> ${(sensorDiag).toFixed(3)} mm</p>`;
+        <p><strong>Sensor Diagonal:</strong> ${sensorDiag.toFixed(3)} mm</p>`;
     }
 
     // Photosite calculation
@@ -338,7 +348,7 @@
       const sw = parseFloat(document.getElementById('sensorWidthP').value);
       const ps = parseFloat(document.getElementById('photositeCount').value);
       const fd = parseFloat(document.getElementById('focusDistanceP').value) * 1000;
-      const fNum = getFNumber('fRatioP');
+      const fNum = computeEffective('fRatioP');
       const fl = parseFloat(document.getElementById('focalLengthP').value);
       const df = parseFloat(document.getElementById('diffFactor').value);
       const wl = parseFloat(document.getElementById('wavelength').value) / 1000;
@@ -352,12 +362,7 @@
       let far = (hyper * fd) / (hyper - (fd - fl));
       let near = (hyper * fd) / (hyper + (fd - fl));
       let total = far - near;
-
-      if (fd >= hyper || (total < 0 && far < 0)) {
-        total = Infinity;
-        far = Infinity;
-      }
-
+      if (fd >= hyper || (total < 0 && far < 0)) { total = Infinity; far = Infinity; }
       const hypernear = hyper / 2;
       const sweetspotmin = pitch / (2.44 * wl);
       const sweetspotmax = (pitch*2) / (2.44 * wl);
@@ -375,7 +380,7 @@
         <hr>
         <p><strong>Diffraction Ratio:</strong> ${(airy/pitch).toFixed(2)}x</p>
         <p><strong>Diffraction Limit:</strong> f/${(diflimit/(2.44*wl)).toFixed(1)}</p>
-        <p><strong>Ideal f-stop Range:</strong> f/${(sweetspotmin).toFixed(2)} to f/${(sweetspotmax).toFixed(2)}</p>`;
+        <p><strong>Ideal f-stop Range:</strong> f/${sweetspotmin.toFixed(2)} to f/${sweetspotmax.toFixed(2)}</p>`;
     }
   </script>
 </body>
