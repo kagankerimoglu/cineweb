@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Exposure Calculator</title>
-  <!-- Google Font -->
   <style>
     body {
       font-family: Inter, sans-serif;
@@ -27,14 +26,16 @@
     }
     h1 { 
       margin: 0px;
-      font-size: 27px;
+      font-size: 28px;
       font-weight: 600;
       text-align: center;
+      color: #292929;
     }
     label {
       display: block;
       margin-top: 16px;
       font-weight: 600;
+      color: #292929;
     }
     input, select {
       width: 100%;
@@ -75,6 +76,7 @@
       padding: 15px;
       background: #F2F2F2;
       border-radius: 8px;
+      color: #292929;
     }
     .footer {
       margin-top: 15px;
@@ -254,7 +256,7 @@
       if (!fstopSource) { alert('Please enter a valid F-Stop Source.');
       return;
     }
-      let resultHTML = '<h2>Results</h2>';
+      let resultHTML = '';
       if (type === 'exposureBetweenFStops') {
         const fstopDest = getBaseFNumber('fRatioDest') * stepMap[document.getElementById('fRatioDestStep').value];
         if (!fstopDest) { alert('Please enter a valid F-Stop Destination.');
