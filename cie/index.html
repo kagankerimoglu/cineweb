@@ -14,7 +14,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      min-height: 90vh;
     }
     .container {
       max-width: 600px;
@@ -41,12 +41,12 @@
     }
     button {
       margin-top: 20px;
-      padding: 10px 20px;
+      padding: 5px 10px;
       font-size: 16px;
       cursor: pointer;
     }
     .result {
-      margin-top: 30px;
+      margin-top: 20px;
       padding: 15px;
       background: #e9e9e9;
       border-radius: 4px;
@@ -54,7 +54,7 @@
     .footer {
       margin-top: 20px;
       text-align: center;
-      font-size: 14px;
+      font-size: 15px;
       color: #777;
     }
   </style>
@@ -63,7 +63,7 @@
   <div class="container">
     <h1>CIE Calculator</h1>
     <form onsubmit="event.preventDefault(); calculateCIE();">
-      <label for="calcType">Calculation Type:</label>
+      <label for="calcType">Calculation Type</label>
       <select id="calcType" onchange="updateFields()">
         <option value="xyToCCT">CIE 1931 xy → CCT & Δuv</option>
         <option value="CCTToXY">CCT → CIE 1931 xy</option>
@@ -71,15 +71,15 @@
       
       <!-- xy inputs -->
       <div id="xyInputs">
-        <label for="xValue">x:</label>
+        <label for="xValue">x</label>
         <input type="number" id="xValue" placeholder="e.g. 0.3127" step="any">
-        <label for="yValue">y:</label>
+        <label for="yValue">y</label>
         <input type="number" id="yValue" placeholder="e.g. 0.3290" step="any">
       </div>
       
       <!-- CCT input -->
       <div id="CCTInput">
-        <label for="cctValue">CCT (K):</label>
+        <label for="cctValue">CCT (K)</label>
         <input type="number" id="cctValue" placeholder="e.g. 3200" step="any">
       </div>
       
@@ -90,7 +90,7 @@
   </div>
 
   <div class="footer">
-    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+    © Kagan Kerimoglu 2025
   </div>
   
   <script>
