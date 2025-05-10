@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Your Page Title"
+permalink: /sensormodes.md
+---
+
 ### Common Sensor / Recording Modes<br>
 **ARRI and Sony CineAlta Cinema Cameras**
 
