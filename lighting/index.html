@@ -14,7 +14,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      min-height: 90vh;
     }
     .container {
       max-width: 600px;
@@ -41,12 +41,12 @@
     }
     button {
       margin-top: 20px;
-      padding: 10px 20px;
+      padding: 5px 10px;
       font-size: 16px;
       cursor: pointer;
     }
     .result {
-      margin-top: 30px;
+      margin-top: 20px;
       padding: 15px;
       background: #e9e9e9;
       border-radius: 4px;
@@ -54,7 +54,7 @@
     .footer {
       margin-top: 20px;
       text-align: center;
-      font-size: 14px;
+      font-size: 15px;
       color: #777;
     }
     /* Flex row for distances */
@@ -71,7 +71,7 @@
   <div class="container">
     <h1>Lighting Calculator</h1>
     <form onsubmit="event.preventDefault(); calculateLight();">
-      <label for="calcType">Calculation Type:</label>
+      <label for="calcType">Calculation Type</label>
       <select id="calcType" onchange="updateFields()">
         <option value="fallOff">Intensity Fall‑Off</option>
         <option value="diameter">Beam Diameter</option>
@@ -81,7 +81,7 @@
 
       <!-- New mode selector for fall-off -->
       <div id="fallOffModeContainer" style="display:none">
-        <label for="fallOffMode">Mode:</label>
+        <label for="fallOffMode">Mode</label>
         <select id="fallOffMode" onchange="updateFields()">
           <option value="intensity">Illuminance (lux/fc)</option>
           <option value="fstop">F-Stop</option>
@@ -89,40 +89,40 @@
       </div>
 
       <div id="intensityInput">
-        <label for="intensity">Illuminance (lux/fc):</label>
+        <label for="intensity">Illuminance (lux/fc)</label>
         <input type="number" id="intensity" placeholder="e.g. 1000" step="any">
       </div>
 
       <!-- F-Stop input for fall-off -->
       <div id="fstopInput" style="display:none">
-        <label for="fstop">F-Stop:</label>
+        <label for="fstop">F-Stop</label>
         <input type="number" id="fstop" placeholder="e.g. 16" step="any">
       </div>
 
       <div id="distanceInput">
-        <label for="distance">Distance (m):</label>
+        <label for="distance">Distance (m)</label>
         <input type="number" id="distance" placeholder="e.g. 10" step="any">
       </div>
 
       <!-- Distances side by side -->
       <div id="distanceRow" class="distance-row" style="display:none;">
         <div id="distance1Input">
-          <label for="distance1">Distance 1 (m):</label>
+          <label for="distance1">Distance 1 (m)</label>
           <input type="number" id="distance1" placeholder="e.g. 5" step="any">
         </div>
         <div id="distance2Input">
-          <label for="distance2">Distance 2 (m):</label>
+          <label for="distance2">Distance 2 (m)</label>
           <input type="number" id="distance2" placeholder="e.g. 15" step="any">
         </div>
       </div>
 
       <div id="beamAngleInput">
-        <label for="beamAngle">Beam Angle (°):</label>
+        <label for="beamAngle">Beam Angle (°)</label>
         <input type="number" id="beamAngle" placeholder="e.g. 30" step="any">
       </div>
 
       <div id="beamDiameterInput">
-        <label for="beamDiameter">Beam Diameter (m):</label>
+        <label for="beamDiameter">Beam Diameter (m)</label>
         <input type="number" id="beamDiameter" placeholder="e.g. 5" step="any">
       </div>
 
@@ -133,7 +133,7 @@
   </div>
 
   <div class="footer">
-    Version 1.0<br>(C) 2025 Kagan Kerimoglu
+    © Kagan Kerimoglu 2025
   </div>
 
   <script>
