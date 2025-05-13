@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Responsive viewport meta tag -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cine Calculator</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    /* Use flexbox on the body for centering and responsiveness */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
     body {
-      font-family: Inter, sans-serif;
+      font-family: 'Inter', sans-serif;
       background-color: #f5f5f5;
       margin: 0;
       padding: 20px;
@@ -17,7 +20,6 @@
       align-items: center;
       min-height: 90vh;
     }
-    /* Container similar to the dofcalculator */
     .container {
       max-width: 600px;
       width: 100%;
@@ -28,40 +30,45 @@
       text-align: center;
     }
     h1 {
+      margin-top: 8px;
+      margin-bottom: 20px;
+      font-size: 30px;
+      font-weight: 600;
       color: #292929;
-      margin-top: 0;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      margin-bottom: 10px;
-    }
-    a {
+    .calc-button {
+      display: block;
+      width: 100%;
+      padding: 10px 0;
+      margin: 12px 0; 
+      font-size: 18px;
+      font-weight: 400;
+      color: #ffffff;
+      background-color: #3b82f6;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
       text-decoration: none;
-      color: #007acc;
-      font-size: 19px;
     }
-    a:hover {
-      text-decoration: underline;
+    .calc-button:hover {
+      background-color: #2563eb;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Cine Calculator</h1>
-    <ul>
-      <li><a href="dof/">Depth of Field Calculator</a></li>      
-      <li><a href="fov/">Field of View Calculator</a></li>
-      <li><a href="exposure/">Exposure Calculator</a></li>
-      <li><a href="logexposure/">Log Exposure Calculator</a></li>
-      <li><a href="lighting/">Lighting Calculator</a></li>
-      <li><a href="shutter/">Shutter Calculator</a></li>
-      <li><a href="diffraction/">Diffraction Calculator</a></li>
-      <li><a href="diopter/">Diopter Calculator</a></li>
-      <li><a href="cie/">CIE Calculator</a></li>
-    </ul>
+    <nav aria-label="Calculator Navigation">
+      <a class="calc-button" href="dof/">Depth of Field Calculator</a>
+      <a class="calc-button" href="fov/">Field of View Calculator</a>
+      <a class="calc-button" href="exposure/">Exposure Calculator</a>
+      <a class="calc-button" href="logexposure/">Log Exposure Calculator</a>
+      <a class="calc-button" href="lighting/">Lighting Calculator</a>
+      <a class="calc-button" href="shutter/">Shutter Calculator</a>
+      <a class="calc-button" href="diffraction/">Diffraction Calculator</a>
+      <a class="calc-button" href="diopter/">Diopter Calculator</a>
+      <a class="calc-button" href="cie/">CIE Calculator</a>
+    </nav>
   </div>
 </body>
 </html>
