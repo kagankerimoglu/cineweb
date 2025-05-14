@@ -50,6 +50,9 @@
       font-family: 'Inter', sans-serif;
       font-size: 16px;
     }
+    .custom-input {
+      display: none;
+    }
     button {
       width: 100%; 
       margin-top: 20px;
@@ -79,7 +82,6 @@
       font-size: 15px;
       color: #777777;
     }
-    /* Flex row for distances */
     .distance-row {
       display: flex;
       gap: 16px;
@@ -87,38 +89,74 @@
     .distance-row > div {
       flex: 1;
     }
+    .row {
+      display: flex;
+      gap: 16px;
+    }
+    .row > div {
+      flex: 1;
+    }
   </style>
 </head>
-<body onload="updateFields()">
+<body onload="init();">
   <div class="container">
     <h1>Lighting Calculator</h1>
     <form onsubmit="event.preventDefault(); calculateLight();">
       <label for="calcType">Calculation Type</label>
-      <select id="calcType" onchange="updateFields()">
-        <option value="fallOff">Intensity Fall‑Off</option>
+      <select id="calcType" onchange="updateFields();">
+        <option value="fallOff">Intensity Fall-Off</option>
         <option value="diameter">Beam Diameter</option>
         <option value="angle">Beam Angle</option>
         <option value="distance">Distance</option>
       </select>
 
-      <!-- New mode selector for fall-off -->
       <div id="fallOffModeContainer" style="display:none">
         <label for="fallOffMode">Mode</label>
-        <select id="fallOffMode" onchange="updateFields()">
+        <select id="fallOffMode" onchange="updateFields();">
           <option value="intensity">Illuminance (lux/fc)</option>
           <option value="fstop">F-Stop</option>
         </select>
       </div>
 
+      <!-- Intensity input -->
       <div id="intensityInput">
         <label for="intensity">Illuminance (lux/fc)</label>
         <input type="number" id="intensity" placeholder="e.g. 1000" step="any">
       </div>
 
-      <!-- F-Stop input for fall-off -->
+      <!-- F-Stop dropdowns for fall-off -->
       <div id="fstopInput" style="display:none">
-        <label for="fstop">F-Stop</label>
-        <input type="number" id="fstop" placeholder="e.g. 16" step="any">
+        <div class="row">
+          <div>
+            <label for="fRatioSource">F-Stop Source</label>
+            <select id="fRatioSource" onchange="onFNumberChange('fRatioSource'); updateDisplays('fRatioSource');">
+              <option>f/1.0</option>
+              <option>f/1.4</option>
+              <option>f/2.0</option>
+              <option>f/2.8</option>
+              <option>f/4.0</option>
+              <option selected>f/5.6</option>
+              <option>f/8.0</option>
+              <option>f/11</option>
+              <option>f/16</option>
+              <option>f/22</option>
+              <option>f/32</option>
+              <option>Custom</option>
+            </select>
+            <input type="number" id="fRatioSourceCustom" class="custom-input" placeholder="Custom f-number" step="any" oninput="updateDisplays('fRatioSource');">
+          </div>
+          <div>
+            <label for="fRatioSourceStep">Increment</label>
+            <select id="fRatioSourceStep" onchange="updateDisplays('fRatioSource');">
+              <option value="0">+0</option>
+              <option value="1/4">+1/4</option>
+              <option value="1/3">+1/3</option>
+              <option value="1/2">+1/2</option>
+              <option value="2/3">+2/3</option>
+              <option value="3/4">+3/4</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div id="distanceInput">
@@ -126,7 +164,6 @@
         <input type="number" id="distance" placeholder="e.g. 10" step="any">
       </div>
 
-      <!-- Distances side by side -->
       <div id="distanceRow" class="distance-row" style="display:none;">
         <div id="distance1Input">
           <label for="distance1">Distance 1 (m)</label>
@@ -159,9 +196,62 @@
   </div>
 
   <script>
+    // Full-stop f-numbers map
+    const fNumberMap = {
+      'f/1.0': Math.sqrt(Math.pow(2,0)),
+      'f/1.4': Math.sqrt(Math.pow(2,1)),
+      'f/2.0': Math.sqrt(Math.pow(2,2)),
+      'f/2.8': Math.sqrt(Math.pow(2,3)),
+      'f/4.0': Math.sqrt(Math.pow(2,4)),
+      'f/5.6': Math.sqrt(Math.pow(2,5)),
+      'f/8.0': Math.sqrt(Math.pow(2,6)),
+      'f/11':  Math.sqrt(Math.pow(2,7)),
+      'f/16':  Math.sqrt(Math.pow(2,8)),
+      'f/22':  Math.sqrt(Math.pow(2,9)),
+      'f/32':  Math.sqrt(Math.pow(2,10))
+    };
+    // Stop increments
+    const stepMap = {
+      '0':    1,
+      '1/4':  Math.pow(2,(1/4)/2),
+      '1/3':  Math.pow(2,(1/3)/2),
+      '1/2':  Math.pow(2,(1/2)/2),
+      '2/3':  Math.pow(2,(2/3)/2),
+      '3/4':  Math.pow(2,(3/4)/2)
+    };
+
+    function onFNumberChange(id) {
+      const sel = document.getElementById(id);
+      const custom = document.getElementById(id + 'Custom');
+      custom.style.display = sel.value === 'Custom' ? 'block' : 'none';
+    }
+    function updateDisplays(id) {
+      const base = getBaseFNumber(id);
+      if (base == null) return;
+      const stepSel = document.getElementById(id + 'Step');
+      Array.from(stepSel.options).forEach(opt => {
+        const stepFactor = stepMap[opt.value];
+        const eff = base * stepFactor;
+        opt.text = `+${opt.value} (f/${eff.toFixed(4)})`;
+      });
+    }
+    function getBaseFNumber(id) {
+      const sel = document.getElementById(id);
+      if (sel.value === 'Custom') {
+        const c = parseFloat(document.getElementById(id + 'Custom').value);
+        return isNaN(c) ? null : c;
+      }
+      return fNumberMap[sel.value] || null;
+    }
+
+    function init() {
+      onFNumberChange('fRatioSource');
+      updateDisplays('fRatioSource');
+      updateFields();
+    }
+
     function updateFields() {
       const type = document.getElementById("calcType").value;
-      // Hide all inputs initially
       ["fallOffModeContainer","intensityInput","fstopInput","distanceInput","distanceRow","beamAngleInput","beamDiameterInput"]
         .forEach(id => document.getElementById(id).style.display = "none");
 
@@ -206,21 +296,24 @@
           const mode = document.getElementById("fallOffMode").value;
           const d1 = getValue("distance1", "distance 1");
           const d2 = getValue("distance2", "distance 2");
-          if (d2 === 0) showError("Distance 2 must be non‑zero.");
+          if (d2 === 0) showError("Distance 2 must be non-zero.");
 
           if (mode === "intensity") {
             const I1 = getValue("intensity", "intensity");
             const I2 = I1 * Math.pow((d1 / d2), 2);
             const stops = Math.log2(I1 / I2);
             resultDiv.innerHTML = `
-              <p><strong>Fall‑Off Intensity:</strong> ${I2.toFixed(3)}</p>
+              <p><strong>Fall-Off Intensity:</strong> ${I2.toFixed(3)}</p>
               <p><strong>Change in Stops:</strong> ${stops.toFixed(2)} EV</p>`;
           } else {
-            const f1 = getValue("fstop", "f-stop");
+            const base = getBaseFNumber('fRatioSource');
+            if (base == null) showError('Please enter a valid F-Stop Source.');
+            const stepFactor = stepMap[ document.getElementById('fRatioSourceStep').value ];
+            const f1 = base * stepFactor;
             const stopsChange = 2 * Math.log2(d1 / d2);
             const f2 = f1 * Math.pow(2, stopsChange / 2);
             resultDiv.innerHTML = `
-              <p><strong>F‑Stop at Distance 2:</strong> f/${f2.toFixed(2)}</p>
+              <p><strong>F-Stop at Distance 2:</strong> f/${f2.toFixed(2)}</p>
               <p><strong>Change in Stops:</strong> ${stopsChange.toFixed(2)} EV</p>`;
           }
 
@@ -234,7 +327,7 @@
         } else if (type === "angle") {
           const diameter = getValue("beamDiameter", "beam diameter");
           const d = getValue("distance", "distance");
-          if (d === 0) showError("Distance must be non‑zero.");
+          if (d === 0) showError("Distance must be non-zero.");
           const angle = 2 * Math.atan(diameter / (2 * d)) * 180 / Math.PI;
           resultDiv.innerHTML = `
             <p><strong>Beam Angle:</strong> ${angle.toFixed(2)}°</p>`;
@@ -249,7 +342,7 @@
             <p><strong>Distance:</strong> ${distance.toFixed(3)} m</p>`;
         }
       } catch (e) {
-        // error already alerted
+        // error already handled
       }
     }
   </script>
