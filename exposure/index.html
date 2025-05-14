@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Inter, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: #f5f5f5;
       padding: 20px;
       margin: 0;
@@ -27,7 +27,7 @@
       box-shadow: 0 10px 15px rgba(0,0,0,0.1);
     }
     h1 { 
-      margin: 8px;
+      margin: 0px;
       font-size: 30px;
       font-weight: 600;
       text-align: center;
@@ -36,6 +36,7 @@
     label {
       display: block;
       margin-top: 16px;
+      font-size: 16px;
       font-weight: 600;
       color: #292929;
     }
@@ -46,6 +47,7 @@
       border: 1px solid #B3B3B3;
       border-radius: 8px;
       box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
     }
     .row {
@@ -66,6 +68,7 @@
       color: white;
       border: none;
       border-radius: 8px;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
       font-weight: 400;
       cursor: pointer;
@@ -85,7 +88,7 @@
       text-align: center;
       font-size: 15px;
       color: #777777;
-    }
+    }    
   </style>
 </head>
 <body onload="init();">
@@ -130,10 +133,6 @@
               <option value="3/4">+3/4</option>
             </select>
           </div>
-          <div>
-            <label for="fRatioSourceEffective">Effective</label>
-            <input type="text" id="fRatioSourceEffective" readonly placeholder="f/0.00">
-          </div>
         </div>
       </div>
 
@@ -169,15 +168,11 @@
               <option value="3/4">+3/4</option>
             </select>
           </div>
-          <div>
-            <label for="fRatioDestEffective">Effective</label>
-            <input type="text" id="fRatioDestEffective" readonly placeholder="f/0.00">
-          </div>
         </div>
       </div>
 
       <!-- Inputs for F-Stop from Exposure Difference -->
-      <div id="fstopFromExposureInput">
+      <div id="fstopFromExposureInput" style="display:none;">
         <label for="exposureDifference">Exposure Difference (ΔE±):</label>
         <input type="number" id="exposureDifference" placeholder="e.g. 2" step="any">
       </div>
@@ -202,38 +197,38 @@
       'f/4.0': Math.sqrt(Math.pow(2,4)),
       'f/5.6': Math.sqrt(Math.pow(2,5)),
       'f/8.0': Math.sqrt(Math.pow(2,6)),
-      'f/11': Math.sqrt(Math.pow(2,7)),
-      'f/16': Math.sqrt(Math.pow(2,8)),
-      'f/22': Math.sqrt(Math.pow(2,9)),
-      'f/32': Math.sqrt(Math.pow(2,10))
+      'f/11':  Math.sqrt(Math.pow(2,7)),
+      'f/16':  Math.sqrt(Math.pow(2,8)),
+      'f/22':  Math.sqrt(Math.pow(2,9)),
+      'f/32':  Math.sqrt(Math.pow(2,10))
     };
     // Stop increments
     const stepMap = {
-      '0': 1,
-      '1/4': Math.pow(2,(1/4)/2),
-      '1/3': Math.pow(2,(1/3)/2),
-      '1/2': Math.pow(2,(1/2)/2),
-      '2/3': Math.pow(2,(2/3)/2),
-      '3/4': Math.pow(2,(3/4)/2)
+      '0':    1,
+      '1/4':  Math.pow(2,(1/4)/2),
+      '1/3':  Math.pow(2,(1/3)/2),
+      '1/2':  Math.pow(2,(1/2)/2),
+      '2/3':  Math.pow(2,(2/3)/2),
+      '3/4':  Math.pow(2,(3/4)/2)
     };
+
     function onFNumberChange(id) {
       const sel = document.getElementById(id);
       const custom = document.getElementById(id + 'Custom');
       custom.style.display = sel.value === 'Custom' ? 'block' : 'none';
     }
+
     function updateDisplays(id) {
-      // update increment labels
       const base = getBaseFNumber(id);
-      if (base != null) {
-        const stepSel = document.getElementById(id + 'Step');
-        Array.from(stepSel.options).forEach(opt => {
-          const m = stepMap[opt.value]; opt.text = `+${opt.value}`;
-        });
-        const effInput = document.getElementById(id + 'Effective');
-        const eff = base * stepMap[document.getElementById(id + 'Step').value];
-        effInput.value = `f/${eff.toFixed(4)}`;
-      }
+      if (base == null) return;
+      const stepSel = document.getElementById(id + 'Step');
+      Array.from(stepSel.options).forEach(opt => {
+        const stepFactor = stepMap[opt.value];
+        const eff = base * stepFactor;
+        opt.text = `+${opt.value} (f/${eff.toFixed(4)})`;
+      });
     }
+
     function getBaseFNumber(id) {
       const sel = document.getElementById(id);
       if (sel.value === 'Custom') {
@@ -242,41 +237,42 @@
       }
       return fNumberMap[sel.value] || null;
     }
+
     function init() {
-      ['fRatioSource','fRatioDest'].forEach(id => { onFNumberChange(id); updateDisplays(id); });
+      ['fRatioSource','fRatioDest'].forEach(id => {
+        onFNumberChange(id);
+        updateDisplays(id);
+      });
       updateFields();
     }
+
     function updateFields() {
       const type = document.getElementById('calcType').value;
       document.getElementById('exposureBetweenFStopsInput').style.display = type === 'exposureBetweenFStops' ? 'block' : 'none';
       document.getElementById('fstopFromExposureInput').style.display = type === 'fstopFromExposure' ? 'block' : 'none';
     }
+
     function calculateExposure() {
       const type = document.getElementById('calcType').value;
       const resultDiv = document.getElementById('result');
       const fstopSource = getBaseFNumber('fRatioSource') * stepMap[document.getElementById('fRatioSourceStep').value];
-      if (!fstopSource) { alert('Please enter a valid F-Stop Source.');
-      return;
-    }
+      if (!fstopSource) { alert('Please enter a valid F-Stop Source.'); return; }
+
       let resultHTML = '';
       if (type === 'exposureBetweenFStops') {
         const fstopDest = getBaseFNumber('fRatioDest') * stepMap[document.getElementById('fRatioDestStep').value];
-        if (!fstopDest) { alert('Please enter a valid F-Stop Destination.');
-        return;
-      }
+        if (!fstopDest) { alert('Please enter a valid F-Stop Destination.'); return; }
         const diff = 2 * Math.log(fstopSource / fstopDest) / Math.log(2);
         resultHTML += `<p><strong>Exposure Difference (ΔE±):</strong> ${diff.toFixed(2)} EV</p>`;
         resultHTML += `<p><strong>F-Stop Source:</strong> f/${fstopSource.toFixed(2)}</p>`;
         resultHTML += `<p><strong>F-Stop Destination:</strong> f/${fstopDest.toFixed(2)}</p>`;
       } else {
-        const exposureDifference = parseFloat(document.getElementById('exposureDifference').value);
-        if (isNaN(exposureDifference)) { alert('Please enter a valid Exposure Difference (ΔE±).');
-        return;
-      }
-        const dest = fstopSource / Math.pow(2, exposureDifference/2);
+        const expDiff = parseFloat(document.getElementById('exposureDifference').value);
+        if (isNaN(expDiff)) { alert('Please enter a valid Exposure Difference (ΔE±).'); return; }
+        const dest = fstopSource / Math.pow(2, expDiff/2);
         resultHTML += `<p><strong>F-Stop Destination:</strong> f/${dest.toFixed(2)}</p>`;
         resultHTML += `<p><strong>F-Stop Source:</strong> f/${fstopSource.toFixed(2)}</p>`;
-        resultHTML += `<p><strong>Exposure Difference (ΔE±):</strong> ${exposureDifference.toFixed(2)} EV</p>`;
+        resultHTML += `<p><strong>Exposure Difference (ΔE±):</strong> ${expDiff.toFixed(2)} EV</p>`;
       }
       resultDiv.innerHTML = resultHTML;
     }
