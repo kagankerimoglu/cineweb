@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Inter, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: #f5f5f5;
       padding: 20px;
       margin: 0;
@@ -27,7 +27,7 @@
       box-shadow: 0 10px 15px rgba(0,0,0,0.1);
     }
     h1 {
-      margin: 8px;
+      margin: 0px;
       font-size: 30px;
       font-weight: 600;
       text-align: center;
@@ -36,6 +36,7 @@
     label {
       display: block;
       margin-top: 16px;
+      font-size: 16px;
       font-weight: 600;
       color: #292929;
     }
@@ -46,22 +47,34 @@
       border: 1px solid #B3B3B3;
       border-radius: 8px;
       box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
     }
-    #customFocalRatio {
+    .row { 
+      display: flex;
+      gap: 16px;
+    }
+    .row > div {
+      flex: 1;
+    }
+    .custom-input {
       display: none;
     }
     button {
-      width: 100%; 
+      width: 100%;
       margin-top: 20px;
       padding: 10px 20px;
       background-color: #3b82f6;
       color: white;
       border: none;
       border-radius: 8px;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
       font-weight: 400;
       cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
     }
     .result {
       margin-top: 20px;
@@ -78,41 +91,41 @@
     }
   </style>
 </head>
-<body>
+<body onload="init();">
   <div class="container">
     <h1>Diffraction Calculator</h1>
     <form onsubmit="event.preventDefault(); calculateDiffraction();">
-      <!-- Focal Ratio selector -->
-      <label for="focalRatio">Focal Ratio</label>
-      <select id="focalRatio">
-        <option>f/1.4</option>
-        <option>f/1.6</option>
-        <option>f/1.8</option>
-        <option>f/2.0</option>
-        <option>f/2.2</option>
-        <option>f/2.5</option>
-        <option>f/2.8</option>
-        <option>f/3.2</option>
-        <option>f/3.5</option>
-        <option>f/4.0</option>
-        <option>f/4.5</option>
-        <option>f/5.0</option>
-        <option>f/5.6</option>
-        <option>f/6.3</option>
-        <option>f/7.1</option>
-        <option selected>f/8.0</option>
-        <option>f/9.0</option>
-        <option>f/10</option>
-        <option>f/11</option>
-        <option>f/13</option>
-        <option>f/14</option>
-        <option>f/16</option>
-        <option>f/18</option>
-        <option>f/20</option>
-        <option>f/22</option>
-        <option>Custom</option>
-      </select>
-      <input type="number" id="customFocalRatio" placeholder="e.g. 2.4">
+      <!-- Focal Ratio: base and increment -->
+      <label for="fRatioBase">Focal Ratio</label>
+      <div class="row">
+        <div>
+          <select id="fRatioBase" onchange="onFNumberChange('fRatioBase'); updateDisplays();">
+            <option>f/1.0</option>
+            <option>f/1.4</option>
+            <option>f/2.0</option>
+            <option>f/2.8</option>
+            <option>f/4.0</option>
+            <option selected>f/5.6</option>
+            <option>f/8.0</option>
+            <option>f/11</option>
+            <option>f/16</option>
+            <option>f/22</option>
+            <option>f/32</option>
+            <option>Custom</option>
+          </select>
+          <input type="number" id="fRatioBaseCustom" class="custom-input" placeholder="Custom f-number" step="any" oninput="updateDisplays();">
+        </div>
+        <div>
+          <select id="fRatioStep" onchange="updateDisplays();">
+            <option value="0">+0</option>
+            <option value="1/4">+1/4</option>
+            <option value="1/3">+1/3</option>
+            <option value="1/2">+1/2</option>
+            <option value="2/3">+2/3</option>
+            <option value="3/4">+3/4</option>
+          </select>
+        </div>
+      </div>
 
       <label for="sensorWidth">Sensor Width (mm)</label>
       <input type="number" id="sensorWidth" placeholder="e.g. 36" step="any">
@@ -134,104 +147,103 @@
   </div>
 
   <script>
-    // mapping each preset to (N,k) for f-number = 2**((N + k/3)/2)
-    const focalSeries = {
-      "f/1.4": {N:1, k:0},
-      "f/1.6": {N:1, k:1},
-      "f/1.8": {N:1, k:2},
-      "f/2.0": {N:2, k:0},
-      "f/2.2": {N:2, k:1},
-      "f/2.5": {N:2, k:2},
-      "f/2.8": {N:3, k:0},
-      "f/3.2": {N:3, k:1},
-      "f/3.5": {N:3, k:2},
-      "f/4.0": {N:4, k:0},
-      "f/4.5": {N:4, k:1},
-      "f/5.0": {N:4, k:2},
-      "f/5.6": {N:5, k:0},
-      "f/6.3": {N:5, k:1},
-      "f/7.1": {N:5, k:2},
-      "f/8.0": {N:6, k:0},
-      "f/9.0": {N:6, k:1},
-      "f/10": {N:6, k:2},
-      "f/11": {N:7, k:0},
-      "f/13": {N:7, k:1},
-      "f/14": {N:7, k:2},
-      "f/16": {N:8, k:0},
-      "f/18": {N:8, k:1},
-      "f/20": {N:8, k:2},
-      "f/22": {N:9, k:0}
+    // Full-stop f-numbers
+    const fNumberMap = {
+      'f/1.0': Math.sqrt(Math.pow(2,0)),
+      'f/1.4': Math.sqrt(Math.pow(2,1)),
+      'f/2.0': Math.sqrt(Math.pow(2,2)),
+      'f/2.8': Math.sqrt(Math.pow(2,3)),
+      'f/4.0': Math.sqrt(Math.pow(2,4)),
+      'f/5.6': Math.sqrt(Math.pow(2,5)),
+      'f/8.0': Math.sqrt(Math.pow(2,6)),
+      'f/11':  Math.sqrt(Math.pow(2,7)),
+      'f/16':  Math.sqrt(Math.pow(2,8)),
+      'f/22':  Math.sqrt(Math.pow(2,9)),
+      'f/32':  Math.sqrt(Math.pow(2,10))
+    };
+    // Stop increments
+    const stepMap = {
+      '0':    1,
+      '1/4':  Math.pow(2,(1/4)/2),
+      '1/3':  Math.pow(2,(1/3)/2),
+      '1/2':  Math.pow(2,(1/2)/2),
+      '2/3':  Math.pow(2,(2/3)/2),
+      '3/4':  Math.pow(2,(3/4)/2)
     };
 
-    document.getElementById("focalRatio")
-      .addEventListener("change", function() {
-        const custom = document.getElementById("customFocalRatio");
-        custom.style.display = this.value === "Custom" ? "block" : "none";
+    function onFNumberChange(id) {
+      const sel = document.getElementById(id);
+      const custom = document.getElementById(id + 'Custom');
+      custom.style.display = sel.value === 'Custom' ? 'block' : 'none';
+    }
+
+    function updateDisplays() {
+      const base = getBaseFNumber('fRatioBase');
+      if (base == null) return;
+      const stepSel = document.getElementById('fRatioStep');
+      Array.from(stepSel.options).forEach(opt => {
+        const factor = stepMap[opt.value];
+        const eff = base * factor;
+        opt.text = `+${opt.value} (f/${eff.toFixed(4)})`;
       });
+    }
+
+    function getBaseFNumber(id) {
+      const sel = document.getElementById(id);
+      if (sel.value === 'Custom') {
+        const c = parseFloat(document.getElementById(id + 'Custom').value);
+        return isNaN(c) ? null : c;
+      }
+      return fNumberMap[sel.value] || null;
+    }
+
+    function init() {
+      onFNumberChange('fRatioBase');
+      updateDisplays();
+    }
 
     function calculateDiffraction() {
-      // inputs
-      const sensorWidth    = parseFloat(document.getElementById("sensorWidth").value);
-      const photositeWidth = parseFloat(document.getElementById("photositeWidth").value);
-      let   wavelength     = parseFloat(document.getElementById("wavelength").value);
-
+      const sensorWidth    = parseFloat(document.getElementById('sensorWidth').value);
+      const photositeWidth = parseFloat(document.getElementById('photositeWidth').value);
+      let   wavelength     = parseFloat(document.getElementById('wavelength').value);
       if (isNaN(sensorWidth) || isNaN(photositeWidth)) {
-        alert("Please fill in sensor width and photosite width.");
+        alert('Please fill in sensor width and photosite width.');
         return;
       }
-      // apply defaults if user clears the fields
       if (isNaN(wavelength)) wavelength = 550;
 
-      // focal ratio
-      let frVal;
-      const sel = document.getElementById("focalRatio").value;
-      if (sel === "Custom") {
-        frVal = parseFloat(document.getElementById("customFocalRatio").value);
-        if (isNaN(frVal)) {
-          alert("Please enter a valid custom f-number.");
-          return;
-        }
-      } else {
-        const spec = focalSeries[sel];
-        frVal = Math.pow(2, (spec.N + spec.k/3) / 2);
-      }
+      const base = getBaseFNumber('fRatioBase');
+      if (base == null) { alert('Please enter a valid focal ratio.'); return; }
+      const stepFactor = stepMap[document.getElementById('fRatioStep').value];
+      const frVal = base * stepFactor;
 
       diffFactor = 2.5;
-      // conversions & core formulas
-      const λμ = wavelength / 1000;     // nm → μm
-      const photositePitch = (sensorWidth / photositeWidth) * 1000; // mm/mm → μm
-      const airydisk        = 2.44 * λμ * frVal;
-      const diflimit        = photositePitch * diffFactor;
-      const limitedStop     = diflimit / (2.44 * λμ);
+      const λμ               = wavelength / 1000;              // nm → μm
+      const photositePitch   = (sensorWidth / photositeWidth) * 1000; // mm/mm → μm
+      const airydisk         = 2.44 * λμ * frVal;
+      const diflimit         = photositePitch * diffFactor;
+      const limitedStop      = diflimit / (2.44 * λμ);
       const diffractionRatio = airydisk / photositePitch;
 
-      // sweet spot
       const sweetMin = photositePitch / (2.44 * λμ);
       const sweetMax = (photositePitch * 2) / (2.44 * λμ);
 
-      // status
-      let symbol, status;
-      if (diffractionRatio < 2) {
-        symbol = "🟢";
-      } else if (diffractionRatio < 2.5) {
-        symbol = "🟡";
-      } else {
-        symbol = "🔴";
-      }
+      let symbol;
+      if (diffractionRatio < 2)      symbol = '🟢';
+      else if (diffractionRatio < 2.5) symbol = '🟡';
+      else                              symbol = '🔴';
 
-      // render as HTML
-      const resultDiv = document.getElementById("result");
+      const resultDiv = document.getElementById('result');
       resultDiv.innerHTML =
-        "" +
-        "<p><strong>Diffraction-Limited?</strong> " + symbol + "</p>" +
-        "<hr>" +
-        "<p><strong>Diffraction Limit:</strong> f/" + limitedStop.toFixed(1) + "</p>" +
-        "<p><strong>Ideal f-stop Range:</strong> f/" + sweetMin.toFixed(2) + " – f/" + sweetMax.toFixed(2) + "</p>" +
-        "<p><strong>Diffraction Ratio:</strong> " + diffractionRatio.toFixed(2) + "×</p>" +
-        "<hr>" +
-        "<p><strong>Photosite Pitch:</strong> " + photositePitch.toFixed(2) + " μm</p>" +
-        "<p><strong>Airy Disk Diameter:</strong> " + airydisk.toFixed(2) + " μm</p>" +
-        "<p><strong>Diffraction Limit:</strong> " + diflimit.toFixed(2) + " μm</p>";
+        `<p><strong>Diffraction-Limited?</strong> ${symbol}</p>` +
+        `<hr>` +
+        `<p><strong>Diffraction Limit:</strong> f/${limitedStop.toFixed(1)}</p>` +
+        `<p><strong>Ideal f-stop Range:</strong> f/${sweetMin.toFixed(2)} – f/${sweetMax.toFixed(2)}</p>` +
+        `<p><strong>Diffraction Ratio:</strong> ${diffractionRatio.toFixed(2)}×</p>` +
+        `<hr>` +
+        `<p><strong>Photosite Pitch:</strong> ${photositePitch.toFixed(2)} μm</p>` +
+        `<p><strong>Airy Disk Diameter:</strong> ${airydisk.toFixed(2)} μm</p>` +
+        `<p><strong>Diffraction Limit:</strong> ${diflimit.toFixed(2)} μm</p>`;
     }
   </script>
 </body>
