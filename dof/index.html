@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Inter, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: #f5f5f5;
       padding: 20px;
       margin: 0;
@@ -27,7 +27,7 @@
       box-shadow: 0 10px 15px rgba(0,0,0,0.1);
     }
     h1 {
-      margin: 8px;
+      margin: 0px;
       font-size: 30px;
       font-weight: 600;
       text-align: center;
@@ -36,6 +36,7 @@
     label {
       display: block;
       margin-top: 16px;
+      font-size: 16px;
       font-weight: 600;
       color: #292929;
     }
@@ -46,6 +47,7 @@
       border: 1px solid #B3B3B3;
       border-radius: 8px;
       box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
     }
     .row {
@@ -63,9 +65,13 @@
       color: white;
       border: none;
       border-radius: 8px;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
       font-weight: 400;
       cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
     }
     .result {
       margin-top: 20px;
@@ -91,7 +97,8 @@
         <option value="viewing">Viewing Distance</option>
         <option value="photosite">Photosite Pitch</option>
       </select>
-      
+
+      <!-- Viewing Inputs -->
       <div id="viewingInputs">
         <div class="row">
           <div>
@@ -123,10 +130,6 @@
               <option value="3/4">+3/4</option>
             </select>
           </div>
-          <div>
-            <label for="fRatioEffective">Effective</label>
-            <input type="text" id="fRatioEffective" readonly placeholder="f/4.00">
-          </div>
         </div>
         <div class="row">
           <div>
@@ -150,6 +153,7 @@
         </div>
       </div>
 
+      <!-- Photosite Inputs -->
       <div id="photositeInputs" style="display:none;">
         <div class="row">
           <div>
@@ -180,10 +184,6 @@
               <option value="2/3">+2/3</option>
               <option value="3/4">+3/4</option>
             </select>
-          </div>
-          <div>
-            <label for="fRatioPEffective">Effective</label>
-            <input type="text" id="fRatioPEffective" readonly placeholder="f/4.00">
           </div>
         </div>
         <div class="row">
@@ -220,7 +220,7 @@
 
       <button type="submit">Calculate</button>
     </form>
-    
+
     <div class="result" id="result"></div>
     <br>
     <div class="view-on-github">
@@ -231,19 +231,19 @@
   <div class="footer">
     © Kagan Kerimoglu 2025
   </div>
-  
+
   <script>
-    // Utility
+    // Utility to convert mm to m
     function mmToM(mm) { return mm / 1000; }
 
     // Show/hide custom f-number input
     function onFNumberChange(id) {
-      const select = document.getElementById(id);
+      const sel = document.getElementById(id);
       const custom = document.getElementById(id + 'Custom');
-      custom.style.display = select.value === 'Custom' ? 'block' : 'none';
+      custom.style.display = sel.value === 'Custom' ? 'block' : 'none';
     }
 
-    // Toggle between calculation types
+    // Toggle inputs based on calculation type
     function toggleInputs() {
       const type = document.getElementById('calcType').value;
       document.getElementById('viewingInputs').style.display = type === 'viewing' ? 'block' : 'none';
@@ -251,14 +251,13 @@
       document.getElementById('result').innerHTML = '';
     }
 
-    // Main handler
     function calculateDoF() {
       const type = document.getElementById('calcType').value;
       if (type === 'viewing') calculateViewing();
       else calculatePhotosite();
     }
 
-    // Full-stop f-numbers
+    // Mapping of standard f-stops to base numbers
     const fNumberMap = {
       'f/1.0': Math.sqrt(Math.pow(2,0)),
       'f/1.4': Math.sqrt(Math.pow(2,1)),
@@ -273,7 +272,7 @@
       'f/32':  Math.sqrt(Math.pow(2,10))
     };
 
-    // Stop increments
+    // Increment stop multipliers
     const stepMap = {
       '0':   1,
       '1/4': Math.pow(2,(1/4)/2),
@@ -290,46 +289,40 @@
         const c = parseFloat(document.getElementById(id + 'Custom').value);
         return isNaN(c) ? null : c;
       }
-      return fNumberMap[sel.value];
+      return fNumberMap[sel.value] || null;
     }
 
-    // Partial multiplier
-    function getStepMultiplier(stepId) {
-      const v = document.getElementById(stepId).value;
-      return stepMap[v];
-    }
-
-    // Compute effective f-number
+    // Compute effective f-number including increment
     function computeEffective(id) {
       const base = getBaseFNumber(id);
       if (!base) return null;
       const stepId = id === 'fRatio' ? 'fRatioStep' : 'fRatioPStep';
-      return base * getStepMultiplier(stepId);
+      const factor = stepMap[document.getElementById(stepId).value] || 1;
+      return base * factor;
     }
 
-    // Update both increment labels and effective display
+    // Update increment option labels with effective f-number
     function updateDisplays(id) {
-      // update step labels
       const base = getBaseFNumber(id);
-      if (base) {
-        const stepSelect = document.getElementById(id === 'fRatio' ? 'fRatioStep' : 'fRatioPStep');
-        Array.from(stepSelect.options).forEach(opt => {
-          const m = stepMap[opt.value];
-          opt.text = `+${opt.value}`;// add (f/${(base*m).toFixed(2)}) to show effective stops inside
-        });
-      }
-      // update effective field
-      const eff = computeEffective(id);
-      const effInput = document.getElementById(id === 'fRatio' ? 'fRatioEffective' : 'fRatioPEffective');
-      effInput.value = eff ? `f/${eff.toFixed(4)}...` : '';
+      if (!base) return;
+      const stepId = id === 'fRatio' ? 'fRatioStep' : 'fRatioPStep';
+      const stepSelect = document.getElementById(stepId);
+      Array.from(stepSelect.options).forEach(opt => {
+        const m = stepMap[opt.value] || 1;
+        const eff = (base * m).toFixed(4);
+        opt.text = `+${opt.value} (f/${eff})`;
+      });
     }
 
     // Initialize on load
     window.addEventListener('DOMContentLoaded', () => {
-      ['fRatio','fRatioP'].forEach(id => updateDisplays(id));
+      ['fRatio','fRatioP'].forEach(id => {
+        onFNumberChange(id);
+        updateDisplays(id);
+      });
     });
 
-    // Viewing calculation
+    // Viewing distance calculation
     function calculateViewing() {
       const sw = parseFloat(document.getElementById('sensorWidth').value);
       const sh = parseFloat(document.getElementById('sensorHeight').value);
@@ -359,7 +352,7 @@
         <p><strong>Sensor Diagonal:</strong> ${sensorDiag.toFixed(3)} mm</p>`;
     }
 
-    // Photosite calculation
+    // Photosite pitch calculation
     function calculatePhotosite() {
       const sw = parseFloat(document.getElementById('sensorWidthP').value);
       const ps = parseFloat(document.getElementById('photositeCount').value);
