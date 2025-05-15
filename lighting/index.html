@@ -128,7 +128,7 @@
       <div id="fstopInput" style="display:none">
         <div class="row">
           <div>
-            <label for="fRatioSource">F-Stop Source</label>
+            <label for="fRatioSource">F-Stop</label>
             <select id="fRatioSource" onchange="onFNumberChange('fRatioSource'); updateDisplays('fRatioSource');">
               <option>f/1.0</option>
               <option>f/1.4</option>
@@ -307,7 +307,7 @@
               <p><strong>Change in Stops:</strong> ${stops.toFixed(2)} EV</p>`;
           } else {
             const base = getBaseFNumber('fRatioSource');
-            if (base == null) showError('Please enter a valid F-Stop Source.');
+            if (base == null) showError('Please enter a valid F-Stop.');
             const stepFactor = stepMap[ document.getElementById('fRatioSourceStep').value ];
             const f1 = base * stepFactor;
             const stopsChange = 2 * Math.log2(d1 / d2);
