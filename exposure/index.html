@@ -99,9 +99,11 @@
       <select id="calcType" onchange="updateFields();">
         <option value="exposureBetweenFStops">Exposure Difference Between F-Stops</option>
         <option value="fstopFromExposure">F-Stop from Exposure Difference</option>
+        <option value="exposureValueToFStop">Exposure Value to F-Stop</option>
+        <option value="fstopToExposureValue">F-Stop to Exposure Value</option>
       </select>
 
-      <!-- F-Stop Source -->
+      <!-- F-Stop Source (for relevant types) -->
       <div id="fstopSourceInputs">
         <div class="row">
           <div>
@@ -177,6 +179,24 @@
         <input type="number" id="exposureDifference" placeholder="e.g. 2" step="any">
       </div>
 
+      <!-- Inputs for Exposure Value to F-Stop -->
+      <div id="evToFStopInput" style="display:none;">
+        <label for="evValue">Exposure Value (EV):</label>
+        <input type="number" id="evValue" placeholder="e.g. 12" step="any">
+        <label for="isoEVtoF">ISO (EI):</label>
+        <input type="number" id="isoEVtoF" placeholder="e.g. 100" step="any">
+        <label for="shutterEVtoF">Shutter Speed (t):</label>
+        <input type="text" id="shutterEVtoF" placeholder="e.g. 1/50 or 0.02">
+      </div>
+
+      <!-- Inputs for F-Stop to Exposure Value -->
+      <div id="fStopToEvInput" style="display:none;">
+        <label for="isoFtoEV">ISO (EI):</label>
+        <input type="number" id="isoFtoEV" placeholder="e.g. 100" step="any">
+        <label for="shutterFtoEV">Shutter Speed (t):</label>
+        <input type="text" id="shutterFtoEV" placeholder="e.g. 1/50 or 0.02">
+      </div>
+
       <button type="submit">Calculate</button>
     </form>
 
@@ -188,7 +208,7 @@
   </div>
 
   <script>
-    // Full-stop f-numbers
+    // Full-stop f-numbers lookup
     const fNumberMap = {
       'f/1.0': Math.sqrt(Math.pow(2,0)),
       'f/1.4': Math.sqrt(Math.pow(2,1)),
@@ -202,7 +222,7 @@
       'f/22':  Math.sqrt(Math.pow(2,9)),
       'f/32':  Math.sqrt(Math.pow(2,10))
     };
-    // Stop increments
+    // Stop increments lookup
     const stepMap = {
       '0':    1,
       '1/4':  Math.pow(2,(1/4)/2),
@@ -211,6 +231,14 @@
       '2/3':  Math.pow(2,(2/3)/2),
       '3/4':  Math.pow(2,(3/4)/2)
     };
+
+    function init() {
+      ['fRatioSource','fRatioDest'].forEach(id => {
+        onFNumberChange(id);
+        updateDisplays(id);
+      });
+      updateFields();
+    }
 
     function onFNumberChange(id) {
       const sel = document.getElementById(id);
@@ -231,6 +259,7 @@
 
     function getBaseFNumber(id) {
       const sel = document.getElementById(id);
+      if (!sel) return null;
       if (sel.value === 'Custom') {
         const c = parseFloat(document.getElementById(id + 'Custom').value);
         return isNaN(c) ? null : c;
@@ -238,42 +267,82 @@
       return fNumberMap[sel.value] || null;
     }
 
-    function init() {
-      ['fRatioSource','fRatioDest'].forEach(id => {
-        onFNumberChange(id);
-        updateDisplays(id);
-      });
-      updateFields();
+    function parseShutter(input) {
+      if (!input) return null;
+      const str = input.trim();
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        const num = parseFloat(parts[0]);
+        const den = parseFloat(parts[1]);
+        if (!isNaN(num) && !isNaN(den) && den !== 0) return num/den;
+        return null;
+      }
+      const val = parseFloat(str);
+      return isNaN(val) ? null : val;
     }
 
     function updateFields() {
       const type = document.getElementById('calcType').value;
+      // Toggle visibility of input sections
+      document.getElementById('fstopSourceInputs').style.display = (type === 'exposureBetweenFStops' || type === 'fstopFromExposure' || type === 'fstopToExposureValue') ? 'block' : 'none';
       document.getElementById('exposureBetweenFStopsInput').style.display = type === 'exposureBetweenFStops' ? 'block' : 'none';
       document.getElementById('fstopFromExposureInput').style.display = type === 'fstopFromExposure' ? 'block' : 'none';
+      document.getElementById('evToFStopInput').style.display = type === 'exposureValueToFStop' ? 'block' : 'none';
+      document.getElementById('fStopToEvInput').style.display = type === 'fstopToExposureValue' ? 'block' : 'none';
+      // Clear previous result
+      document.getElementById('result').innerHTML = '';
     }
 
     function calculateExposure() {
       const type = document.getElementById('calcType').value;
       const resultDiv = document.getElementById('result');
-      const fstopSource = getBaseFNumber('fRatioSource') * stepMap[document.getElementById('fRatioSourceStep').value];
-      if (!fstopSource) { alert('Please enter a valid F-Stop Source.'); return; }
-
       let resultHTML = '';
+
       if (type === 'exposureBetweenFStops') {
-        const fstopDest = getBaseFNumber('fRatioDest') * stepMap[document.getElementById('fRatioDestStep').value];
-        if (!fstopDest) { alert('Please enter a valid F-Stop Destination.'); return; }
-        const diff = 2 * Math.log(fstopSource / fstopDest) / Math.log(2);
+        const src = getBaseFNumber('fRatioSource') * stepMap[document.getElementById('fRatioSourceStep').value];
+        const dest = getBaseFNumber('fRatioDest') * stepMap[document.getElementById('fRatioDestStep').value];
+        if (!src || !dest) { alert('Please enter valid F-Stop values.'); return; }
+        const diff = 2 * Math.log(src / dest) / Math.log(2);
         resultHTML += `<p><strong>Exposure Difference (ΔE±):</strong> ${diff.toFixed(2)} EV</p>`;
-        resultHTML += `<p><strong>F-Stop Source:</strong> f/${fstopSource.toFixed(2)}</p>`;
-        resultHTML += `<p><strong>F-Stop Destination:</strong> f/${fstopDest.toFixed(2)}</p>`;
-      } else {
-        const expDiff = parseFloat(document.getElementById('exposureDifference').value);
-        if (isNaN(expDiff)) { alert('Please enter a valid Exposure Difference (ΔE±).'); return; }
-        const dest = fstopSource / Math.pow(2, expDiff/2);
+        resultHTML += `<hr>`;
+        resultHTML += `<p><strong>F-Stop Source:</strong> f/${src.toFixed(2)}</p>`;
         resultHTML += `<p><strong>F-Stop Destination:</strong> f/${dest.toFixed(2)}</p>`;
-        resultHTML += `<p><strong>F-Stop Source:</strong> f/${fstopSource.toFixed(2)}</p>`;
-        resultHTML += `<p><strong>Exposure Difference (ΔE±):</strong> ${expDiff.toFixed(2)} EV</p>`;
+
+      } else if (type === 'fstopFromExposure') {
+        const src = getBaseFNumber('fRatioSource') * stepMap[document.getElementById('fRatioSourceStep').value];
+        const diff = parseFloat(document.getElementById('exposureDifference').value);
+        if (!src || isNaN(diff)) { alert('Please enter a valid F-Stop and Exposure Difference.'); return; }
+        const dest = src / Math.pow(2, diff / 2);
+        resultHTML += `<p><strong>F-Stop Destination:</strong> f/${dest.toFixed(2)}</p>`;
+        resultHTML += `<hr>`;
+        resultHTML += `<p><strong>F-Stop Source:</strong> f/${src.toFixed(2)}</p>`;
+        resultHTML += `<p><strong>Exposure Difference (ΔE±):</strong> ${diff.toFixed(2)} EV</p>`;
+
+      } else if (type === 'exposureValueToFStop') {
+        const ev = parseFloat(document.getElementById('evValue').value);
+        const iso = parseFloat(document.getElementById('isoEVtoF').value);
+        const shutter = parseShutter(document.getElementById('shutterEVtoF').value);
+        if (isNaN(ev) || isNaN(iso) || shutter === null) { alert('Please enter valid EV, ISO, and Shutter Speed.'); return; }
+        const fNum = Math.sqrt(Math.pow(2, ev) * (iso * shutter) / 100);
+        resultHTML += `<p><strong>F-Stop:</strong> f/${fNum.toFixed(2)}</p>`;
+        resultHTML += `<hr>`;
+        resultHTML += `<p><strong>EV:</strong> ${ev}</p>`;
+        resultHTML += `<p><strong>ISO:</strong> ${iso}</p>`;
+        resultHTML += `<p><strong>Shutter Speed:</strong> ${document.getElementById('shutterEVtoF').value}</p>`;
+
+      } else if (type === 'fstopToExposureValue') {
+        const src = getBaseFNumber('fRatioSource') * stepMap[document.getElementById('fRatioSourceStep').value];
+        const iso = parseFloat(document.getElementById('isoFtoEV').value);
+        const shutter = parseShutter(document.getElementById('shutterFtoEV').value);
+        if (!src || isNaN(iso) || shutter === null) { alert('Please enter valid F-Stop, ISO, and Shutter Speed.'); return; }
+        const ev = Math.log2((100 * Math.pow(src, 2)) / (iso * shutter));
+        resultHTML += `<p><strong>Exposure Value:</strong> ${ev.toFixed(3)} EV</p>`;
+        resultHTML += `<hr>`;
+        resultHTML += `<p><strong>F-Stop:</strong> f/${src.toFixed(2)}</p>`;
+        resultHTML += `<p><strong>ISO:</strong> ${iso}</p>`;
+        resultHTML += `<p><strong>Shutter Speed:</strong> ${document.getElementById('shutterFtoEV').value}</p>`;
       }
+
       resultDiv.innerHTML = resultHTML;
     }
   </script>
