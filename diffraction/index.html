@@ -96,7 +96,7 @@
     <h1>Diffraction Calculator</h1>
     <form onsubmit="event.preventDefault(); calculateDiffraction();">
       <!-- Focal Ratio: base and increment -->
-      <label for="fRatioBase">Focal Ratio</label>
+      <label for="fRatioBase">F-Stop</label>
       <div class="row">
         <div>
           <select id="fRatioBase" onchange="onFNumberChange('fRatioBase'); updateDisplays();">
@@ -213,7 +213,7 @@
       if (isNaN(wavelength)) wavelength = 550;
 
       const base = getBaseFNumber('fRatioBase');
-      if (base == null) { alert('Please enter a valid focal ratio.'); return; }
+      if (base == null) { alert('Please enter a valid f-number.'); return; }
       const stepFactor = stepMap[document.getElementById('fRatioStep').value];
       const frVal = base * stepFactor;
 
